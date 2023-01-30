@@ -3,4 +3,4 @@ data
 *.pth
 data
 models
-cifar10_models
+SGM.ipynb
