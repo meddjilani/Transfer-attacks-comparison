@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 from robustbench.utils import load_model
 from robustbench.data import load_cifar10
-from cifar10_models.resnet import resnet50
+from cifar10_models.resnet import resnet50, resnet18
 import math
 import json
 
@@ -61,8 +61,8 @@ if __name__ == '__main__':
     #select the first n images correctly classified by all targeted models
     parser.add_argument('--n_images', type=int, default=100 , help = 'number of test images')
     parser.add_argument('--batch_size', type=int, default=20 , help = 'batch size')
-    parser.add_argument('--source', default='Resnet50_non_normalize', help = 'source model')
-    parser.add_argument('--targets', type=int,nargs = '+', default = [1, 3, 5, 61], help = 'ranks of target models from cifar-10 linf, eps=2/288 robustbench leaderboad')
+    parser.add_argument('--sources', nargs = '+', default=['Resnet50','Resnet18'], help = 'source model')
+    parser.add_argument('--targets', type=int,nargs = '+', default = [1, 2, 3, 4, 5, 61], help = 'ranks of target models from cifar-10 linf, eps=2/288 robustbench leaderboad')
     parser.add_argument('--log_interval', default= 1, help = 'print each n batch')
     parser.add_argument('--print_log', default=True, help = 'print log in terminal')
     parser.add_argument('--output', default='config_ids_source_targets', help = 'file name contains the correctly classified images plus the source and target models')#output dir or filename
@@ -71,17 +71,21 @@ if __name__ == '__main__':
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    if args.source == 'Resnet50': 
-        source_model = resnet50(pretrained=True)
-    elif args.source == 'Resnet50_non_normalize': 
-        source_model = resnet50(pretrained=False)
-        PATH = 'resnet50_128_100'
-        source_model.load_state_dict(torch.load(PATH,map_location=device))
-    else :
-        raise ValueError('Source model is not recognizable')
-
-    #todevice
-    source_model.eval() 
+    source_models = []
+    for source in args.sources:
+        if source == 'Resnet50': 
+            source_model = resnet50(pretrained=True)
+        elif source == 'Resnet18':
+            source_model = resnet18(pretrained=True)
+        elif source == 'Resnet50_non_normalize': 
+            source_model = resnet50(pretrained=False)
+            PATH = 'resnet50_128_100'
+            source_model.load_state_dict(torch.load(PATH,map_location=device))
+        else :
+            raise ValueError('Source model is not recognizable')
+        #todevice
+        source_model.eval() 
+        source_models.append(source_model)
 
 
     rank_to_id = {
@@ -107,11 +111,11 @@ if __name__ == '__main__':
 
     x_test, y_test = load_cifar10()
     
-    ids = correct_predict_ids(target_models+[source_model], x_test, y_test, args.n_images, args.log_interval, args.print_log, args.batch_size) # + [source_model] get correct  predict images from source model
+    ids = correct_predict_ids(target_models+source_models, x_test, y_test, args.n_images, args.log_interval, args.print_log, args.batch_size) # + source_models get correct  predict images from source models
 
     config = {
         'ids' : ids,
-        'source' : args.source,
+        'sources' : args.sources,
         'targets' : rank_to_id_selected,
     }
 
