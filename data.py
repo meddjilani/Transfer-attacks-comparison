@@ -3,9 +3,13 @@ import torch
 import torch.nn as nn
 from robustbench.utils import load_model
 from robustbench.data import load_cifar10
-from cifar10_models.resnet import resnet50, resnet18
+from cifar10_models.resnet import *
+from cifar10_models.densenet import *
+from cifar10_models.vgg import *
+
 import math
 import json
+from Normalize import Normalize
 
 #add:
     # device for gpu
@@ -14,7 +18,7 @@ import json
 #future:
     #cross validation
 
-#robustbench.utils
+# modified robustbench.utils
 def correct_predict_ids(models,
                    x: torch.Tensor,
                    y: torch.Tensor,
@@ -54,7 +58,7 @@ def correct_predict_ids(models,
         print('Only ',len(ids),' correctly classified images by all target models')
     
     return ids[:n_images]
-
+    
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -62,7 +66,7 @@ if __name__ == '__main__':
     parser.add_argument('--n_images', type=int, default=100 , help = 'number of test images')
     parser.add_argument('--batch_size', type=int, default=20 , help = 'batch size')
     parser.add_argument('--sources', nargs = '+', default=['Resnet50','Resnet18'], help = 'source model')
-    parser.add_argument('--targets', type=int,nargs = '+', default = [1, 2, 3, 4, 5, 61], help = 'ranks of target models from cifar-10 linf, eps=2/288 robustbench leaderboad')
+    parser.add_argument('--targets', type=int,nargs = '+', default = [1, 3, 61], help = 'ranks of target models from cifar-10 linf, eps=2/288 robustbench leaderboad')
     parser.add_argument('--log_interval', default= 1, help = 'print each n batch')
     parser.add_argument('--print_log', default=True, help = 'print log in terminal')
     parser.add_argument('--output', default='config_ids_source_targets', help = 'file name contains the correctly classified images plus the source and target models')#output dir or filename
@@ -71,18 +75,34 @@ if __name__ == '__main__':
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+    mean, std  = (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
     source_models = []
     for source in args.sources:
         if source == 'Resnet50': 
             source_model = resnet50(pretrained=True)
+        elif source == 'Resnet34': 
+            source_model = resnet34(pretrained=True)
         elif source == 'Resnet18':
             source_model = resnet18(pretrained=True)
+        elif source == 'Densenet169': 
+            source_model = densenet169(pretrained=True)
+        elif source == 'Densenet161': 
+            source_model = densenet161(pretrained=True)
+        elif source == 'Densenet121': 
+            source_model = densenet121(pretrained=True)
+        elif source == 'Vgg19':
+            source_model = vgg19_bn(pretrained=True)
         elif source == 'Resnet50_non_normalize': 
             source_model = resnet50(pretrained=False)
             PATH = 'resnet50_128_100'
             source_model.load_state_dict(torch.load(PATH,map_location=device))
         else :
             raise ValueError('Source model is not recognizable')
+        
+        source_model = nn.Sequential(
+            Normalize(mean, std),
+            source_model
+        )
         #todevice
         source_model.eval() 
         source_models.append(source_model)
