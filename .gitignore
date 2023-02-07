@@ -1,6 +1,10 @@
 data
-.ipynb_checkpoints
-*.pth
-data
 models
-SGM.ipynb
+.ipynb_checkpoints
+state_dicts
+__pycache__
+data
+
+*.pth
+*.pt
+*.json
