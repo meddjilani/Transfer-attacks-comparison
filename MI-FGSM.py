@@ -1,14 +1,19 @@
 import torch
 import torch.nn as nn
-from cifar10_models.resnet import resnet50
+from cifar10_models.resnet import *
+from cifar10_models.densenet import *
+from cifar10_models.vgg import *
 from robustbench.data import load_cifar10
 from robustbench.utils import load_model, clean_accuracy
 import torchattacks_ens.attacks.mifgsm as taamifgsm
 import json
 import os
+from Normalize import Normalize
 
 #add:
     # args parm of mi
+
+
 if __name__ == '__main__':
     
     with open('config_ids_source_targets.json','r') as f:
@@ -16,18 +21,33 @@ if __name__ == '__main__':
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+    mean, std  = (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
     source = config['sources'][0] #select first element as source
     if source == 'Resnet50': #use it
         source_model = resnet50(pretrained=True)
-    elif source  == 'Resnet18':
+    elif source  == 'Resnet34':
+        source_model = resnet34(pretrained=True)
+    elif source == 'Resnet18': 
         source_model = resnet18(pretrained=True)
+    elif source == 'Densenet169': 
+        source_model = densenet169(pretrained=True)
+    elif source == 'Densenet161': 
+        source_model = densenet161(pretrained=True)
+    elif source == 'Densenet121': 
+        source_model = densenet121(pretrained=True)
+    elif source == 'Vgg19':
+        source_model = vgg19_bn(pretrained=True)
     elif source  == 'Resnet50_non_normalize': 
         source_model = resnet50(pretrained=False)
         PATH = 'resnet50_128_100'
         source_model.load_state_dict(torch.load(PATH,map_location=device))
     else :
         raise ValueError('Source model is not recognizable')
-
+    
+    source_model = nn.Sequential(
+        Normalize(mean, std),
+        source_model
+    )
     #todevice
     source_model.eval()
 
@@ -61,7 +81,7 @@ if __name__ == '__main__':
     if not os.path.exists('results'):
         os.makedirs('results') 
     
-    file_path = 'results/results_{}_{}.json'.format(config['source'],x_test_correct.size(0))
+    file_path = 'results/results_{}_{}.json'.format(source,x_test_correct.size(0))
 
     if os.path.exists(file_path):
         with open(file_path,'r') as f:
