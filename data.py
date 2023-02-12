@@ -114,6 +114,7 @@ if __name__ == '__main__':
         3 : 'Gowal2020Uncovering_70_16_extra',
         4 : 'Rebuffi2021Fixing_106_16_cutmix_ddpm',
         5 : 'Rebuffi2021Fixing_70_16_cutmix_ddpm',
+        23 :'Carmon2019Unlabeled',
         61 : 'Standard',
     }
 
