@@ -49,14 +49,14 @@ MI-FGSM ENS |
 #### Source: Resnet50, Densenet169, Vgg19
 #### num_images: 100
 
-MI-FGSM ENS
------------
-1.0
-1.0
-1.0
-1.0
-1.0
-0.24
+MI-FGSM ENS |
+----------- |
+1.0         |
+1.0         |
+1.0         |
+1.0         |
+1.0         |   
+0.24        |
 
 
 ### Dast
