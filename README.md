@@ -36,14 +36,15 @@ MI-FGSM  |  TI-FGSM  |  Admix  |  VMI-FGSM  |  VNI-FGSM  |  GN-MIFGSM  |  DI-FGS
 #### Source: Resnet50, Densenet169, Vgg19
 #### num_images: 100
 
-MI-FGSM ENS
------------
-1.0
-1.0
-1.0
-1.0
-1.0
-0.22
+MI-FGSM ENS |
+----------- |
+1.0         |
+1.0         |   
+1.0         |
+1.0         |
+1.0         |
+0.22        |
+
 
 #### Source: Resnet50, Densenet169, Vgg19
 #### num_images: 100
