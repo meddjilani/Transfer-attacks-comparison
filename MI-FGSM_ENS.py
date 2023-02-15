@@ -51,7 +51,7 @@ if __name__ == '__main__':
         source_model.eval()
         source_models.append(source_model)
 
-
+    print('sources',config['sources'], len(source_models))
     target_models = [] 
     rank_target_models = []
     for rank, model_id in config['targets'].items():

@@ -69,7 +69,8 @@ if __name__ == '__main__':
     x_test_correct , y_test_correct = x_test[ids,:,:,:] , y_test[ids]
 
     print('Running MI-FGSM attack')
-    attack = taamifgsm.MIFGSM(source_model, eps=8/255, steps=10, decay=1.0)
+    eps=16/255
+    attack = taamifgsm.MIFGSM(source_model, eps=eps, steps=10, decay=1.0)
     adv_images_MI = attack(x_test_correct, y_test_correct)
 
     MI_results = dict()
@@ -81,7 +82,7 @@ if __name__ == '__main__':
     if not os.path.exists('results'):
         os.makedirs('results') 
     
-    file_path = 'results/results_{}_{}.json'.format(source,x_test_correct.size(0))
+    file_path = 'results/results_{}_{}_{}.json'.format(source,x_test_correct.size(0),eps)
 
     if os.path.exists(file_path):
         with open(file_path,'r') as f:
