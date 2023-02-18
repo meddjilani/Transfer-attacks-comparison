@@ -61,7 +61,7 @@ if __name__ == '__main__':
     if not os.path.exists('results'):
         os.makedirs('results') 
     
-    file_path = 'results/results_{}_{}.json'.format(config['sources'],x_test_correct.size(0))
+    file_path = 'results/results_{}_{}.json'.format(source,x_test_correct.size(0))
 
     if os.path.exists(file_path):
         with open(file_path,'r') as f:

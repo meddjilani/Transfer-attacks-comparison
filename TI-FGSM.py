@@ -69,7 +69,7 @@ if __name__ == '__main__':
     x_test_correct , y_test_correct = x_test[ids,:,:,:] , y_test[ids]
 
     print('Running TI-FGSM attack')
-    eps=8/255
+    eps=16/255
     attack = torchattacks.TIFGSM(source_model, eps=eps, alpha=2/255, steps=10, decay=1.0, resize_rate=0.9, diversity_prob=0.7, random_start=False)
     adv_images_TI = attack(x_test_correct, y_test_correct)
 

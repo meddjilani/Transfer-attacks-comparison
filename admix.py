@@ -31,7 +31,7 @@ class Admix_Attacker(Based_Attacker):
     ):
         default_value = {
             # basic default value
-            "eps": 0.05,
+            "eps": 8/256,
             "nb_iter": 10,
             "eps_iter": 0.005,
             "target": False,
