@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from cifar10_models.ghost_resnet import resnet50
+from cifar10_models.ghost_resnet import resnet50, resnet18
 from robustbench.data import load_cifar10
 from robustbench.utils import load_model, clean_accuracy
 import torchattacks
@@ -16,14 +16,19 @@ if __name__ == '__main__':
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    if config['source'] == 'Resnet50':
-        PATH = 'model_64_100'
+    source = config['sources'][0] #select first element as source
+    if source == 'Resnet50': #use it
+        ghost_source_model = resnet50(pretrained=True)
+    elif source  == 'Resnet18':
+        ghost_source_model = resnet18(pretrained=True)
+    elif source  == 'Resnet50_non_normalize': 
         ghost_source_model = resnet50(pretrained=False)
-        
-    else:
+        PATH = 'resnet50_128_100'
+        ghost_source_model.load_state_dict(torch.load(PATH,map_location=device))
+    else :
         raise ValueError('Source model is not recognizable')
 
-    ghost_source_model.load_state_dict(torch.load(PATH,map_location=device))
+    #todevice
     ghost_source_model.eval()
 
 
@@ -44,7 +49,8 @@ if __name__ == '__main__':
     x_test_correct , y_test_correct = x_test[ids,:,:,:] , y_test[ids]
 
     print('Running Ghost networks attack')
-    attack = torchattacks.MIFGSM(ghost_source_model, eps=8/255, steps=10, decay=1.0)
+    eps = 16/255
+    attack = torchattacks.MIFGSM(ghost_source_model, eps=eps, steps=10, decay=1.0)
     adv_images_GN = attack(x_test_correct, y_test_correct)
 
     GN_results = dict()
@@ -56,7 +62,7 @@ if __name__ == '__main__':
     if not os.path.exists('results'):
         os.makedirs('results') 
     
-    file_path = 'results/results_{}_{}.json'.format(config['source'],x_test_correct.size(0))
+    file_path = 'results/results_{}_{}_{}.json'.format(source,x_test_correct.size(0),eps)
 
     if os.path.exists(file_path):
         with open(file_path,'r') as f:
