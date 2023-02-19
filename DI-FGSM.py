@@ -49,7 +49,8 @@ if __name__ == '__main__':
     x_test_correct , y_test_correct = x_test[ids,:,:,:] , y_test[ids]
 
     print('Running DI-FGSM attack')
-    attack = torchattacks.DIFGSM(source_model, eps=8/255, alpha=2/255, steps=10, decay=0.0, resize_rate=0.9, diversity_prob=0.5, random_start=False)
+    eps=16/255
+    attack = torchattacks.DIFGSM(source_model, eps=eps, alpha=2/255, steps=10, decay=0.0, resize_rate=0.9, diversity_prob=0.5, random_start=False)
     adv_images_DI = attack(x_test_correct, y_test_correct)
 
     DI_results = dict()
@@ -61,7 +62,7 @@ if __name__ == '__main__':
     if not os.path.exists('results'):
         os.makedirs('results') 
     
-    file_path = 'results/results_{}_{}.json'.format(source,x_test_correct.size(0))
+    file_path = 'results/results_{}_{}_{}.json'.format(source,x_test_correct.size(0),eps)
 
     if os.path.exists(file_path):
         with open(file_path,'r') as f:

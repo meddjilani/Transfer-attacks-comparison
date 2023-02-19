@@ -69,7 +69,8 @@ if __name__ == '__main__':
     x_test_correct , y_test_correct = x_test[ids,:,:,:] , y_test[ids]
 
     print('Running VNI-FGSM attack')
-    attack = torchattacks.VNIFGSM(source_model, eps=8/255, alpha=2/255, steps=10, decay=1.0, N=5, beta=3/2)
+    eps = 16/255
+    attack = torchattacks.VNIFGSM(source_model, eps=eps, alpha=2/255, steps=10, decay=1.0, N=5, beta=3/2)
     adv_images_VNI = attack(x_test_correct, y_test_correct)
 
     VNI_results = dict()
@@ -81,7 +82,7 @@ if __name__ == '__main__':
     if not os.path.exists('results'):
         os.makedirs('results') 
     
-    file_path = 'results/results_{}_{}.json'.format(source,x_test_correct.size(0))
+    file_path = 'results/results_{}_{}_{}.json'.format(source,x_test_correct.size(0),eps)
 
     if os.path.exists(file_path):
         with open(file_path,'r') as f:
