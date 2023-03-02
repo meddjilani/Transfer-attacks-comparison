@@ -62,6 +62,20 @@ MI-FGSM  |  DI-FGSM  |  TI-FGSM  |  GN-MIFGSM  |  VMI-FGSM  |  VNI-FGSM
 
 
 ### Source: Model rank 7
+### eps = 8/255
+### num_images: 100 
+
+DI-FGSM  |  MI-FGSM  |  TI-FGSM  |  VMI-FGSM  |  VNI-FGSM
+---------|-----------|-----------|------------|----------
+0.89     |  0.88     |  0.97     |  1.0       |  1.0
+0.85     |  0.85     |  0.9      |  0.99      |  1.0
+0.85     |  0.82     |  0.94     |  1.0       |  0.99
+0.83     |  0.82     |  0.9      |  0.98      |  0.99
+0.81     |  0.81     |  0.86     |  0.99      |  0.99
+0.93     |  0.88     |  0.97     |  0.95      |  0.93
+
+
+### Source: Model rank 7
 ### eps = 16/255
 ### num_images: 100 
 
@@ -73,6 +87,8 @@ DI-FGSM  |  GN-MIFGSM  |  MI-FGSM  |  TI-FGSM  |  VMI-FGSM  |  VNI-FGSM
 0.56     |  0.59       |  0.89     |  0.89     |  0.86      |  0.85
 0.57     |  0.61       |  0.9      |  0.91     |  0.85      |  0.85
 0.57     |  0.52       |  0.76     |  0.95     |  0.73      |  0.77
+
+
 
 ### Source: Carmon19
 ### eps = 16/255
