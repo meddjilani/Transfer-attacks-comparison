@@ -24,11 +24,11 @@ The following results are obtained by using the default parameters of each attac
 ### l2
 ### num_images: 100 
 
-Query efficient meta attack |
------------ |
-0.84        |
-0.35        |   
-0.3         |
+Models,rank | Query efficient meta attack |
+----------- | ---------
+3 Gowal2020Uncovering_70_16_extra      | 0.84 |
+7 Gowal2021Improving_28_10_ddpm_100m       | 0.35 | 
+23 Carmon2019Unlabeled      | 0.3 |
 
 
 ### Source: Resnet50
