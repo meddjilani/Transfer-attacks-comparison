@@ -19,6 +19,18 @@ python MI-FGSM.py
 ## Results
 
 The following results are obtained by using the default parameters of each attack, no tuning have been made.
+
+### Query efficient meta attack
+### l2
+### num_images: 100 
+
+Query efficient meta attack |
+----------- |
+0.84        |
+0.35        |   
+0.3         |
+
+
 ### Source: Resnet50
 ### eps = 8/255
 ### num_images: 100 
