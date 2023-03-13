@@ -21,7 +21,7 @@ python MI-FGSM.py
 The following results are obtained by using the default parameters of each attack, no tuning have been made.
 
 ### Query efficient meta attack
-### l2
+### distance: l2
 ### num_images: 100 
 
 Model | rank | Query efficient meta attack |
@@ -29,6 +29,16 @@ Model | rank | Query efficient meta attack |
 Gowal2020Uncovering_70_16_extra | 3 | 0.84 |
 Gowal2021Improving_28_10_ddpm_100m | 7 | 0.35 | 
 Carmon2019Unlabeled | 23 | 0.3 |
+
+
+### Query efficient meta attack
+### distance: linf
+### num_images: 100 
+
+Model | rank | Query efficient meta attack |
+----------- | --- | ---------
+Gowal2020Uncovering_70_16_extra | 3 | 0.81 |
+Gowal2021Improving_28_10_ddpm_100m | 7 | 0.35 | 
 
 
 ### Source: Resnet50
