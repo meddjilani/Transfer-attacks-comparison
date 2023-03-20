@@ -112,7 +112,7 @@ DI-FGSM  |  GN-MIFGSM  |  MI-FGSM  |  TI-FGSM  |  VMI-FGSM  |  VNI-FGSM
 
 
 ### Source: Model rank 7
-### eps = 16/255
+### eps = 32/255
 ### num_images: 100 
 
 DI-FGSM  |  MI-FGSM  |  TI-FGSM  |  VMI-FGSM  |  VNI-FGSM
