@@ -37,6 +37,14 @@ if __name__ == '__main__':
         source_model = densenet121(pretrained=True)
     elif source == 'Vgg19':
         source_model = vgg19_bn(pretrained=True)
+    elif source == '1':
+        source_model = load_model(model_name='Rebuffi2021Fixing_70_16_cutmix_extra', dataset='cifar10', threat_model='Linf')
+    elif source == '7':
+        source_model = load_model(model_name='Gowal2021Improving_28_10_ddpm_100m', dataset='cifar10', threat_model='Linf')
+    elif source == '23':
+        source_model = load_model(model_name='Carmon2019Unlabeled', dataset='cifar10', threat_model='Linf')
+    elif source == '61':
+        source_model = load_model(model_name='Standard', dataset='cifar10', threat_model='Linf')      
     elif source  == 'Resnet50_non_normalize': 
         source_model = resnet50(pretrained=False)
         PATH = 'resnet50_128_100'
@@ -44,11 +52,16 @@ if __name__ == '__main__':
     else :
         raise ValueError('Source model is not recognizable')
     
-    source_model = nn.Sequential(
+    if not(source.isnumeric()):
+        print('add normalisation to source')
+        source_model = nn.Sequential(
         Normalize(mean, std),
         source_model
     )
-    #todevice
+    else:
+        print('source from robustbench')
+
+    source_model.to(device)
     source_model.eval()
 
 
@@ -57,7 +70,7 @@ if __name__ == '__main__':
     for rank, model_id in config['targets'].items():
         print('Loading model ', rank)
         target_model = load_model(model_name=model_id, dataset='cifar10', threat_model='Linf')
-        #todevice
+        target_model.to(device)
         target_models.append(target_model)
         rank_target_models.append(rank)
 
@@ -69,14 +82,14 @@ if __name__ == '__main__':
     x_test_correct , y_test_correct = x_test[ids,:,:,:] , y_test[ids]
 
     print('Running TI-FGSM attack')
-    eps=16/255
+    eps = 16/255
     attack = torchattacks.TIFGSM(source_model, eps=eps, alpha=2/255, steps=10, decay=1.0, resize_rate=0.9, diversity_prob=0.7, random_start=False)
-    adv_images_TI = attack(x_test_correct, y_test_correct)
+    adv_images_TI = attack(x_test_correct.to(device), y_test_correct.to(device))
 
     TI_results = dict()
     for i,target_model in enumerate(target_models):
         acc = clean_accuracy(target_model, adv_images_TI, y_test_correct)
-        print('Robust Acc {}: %2.2f %%'%(acc*100))
+        print(str(i)+'Robust Acc: %2.2f %%'%(acc*100))
         TI_results[rank_target_models[i]] = acc
 
     if not os.path.exists('results'):
