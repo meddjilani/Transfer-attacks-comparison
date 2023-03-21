@@ -21,6 +21,10 @@ if __name__ == '__main__':
         ghost_source_model = resnet50(pretrained=True)
     elif source  == 'Resnet18':
         ghost_source_model = resnet18(pretrained=True)
+    elif source == '1':
+        ghost_source_model = load_model(model_name='Rebuffi2021Fixing_70_16_cutmix_extra', dataset='cifar10', threat_model='Linf')
+    elif source == '23':
+        ghost_source_model = load_model(model_name='Carmon2019Unlabeled', dataset='cifar10', threat_model='Linf')  
     elif source  == 'Resnet50_non_normalize': 
         ghost_source_model = resnet50(pretrained=False)
         PATH = 'resnet50_128_100'
@@ -49,7 +53,7 @@ if __name__ == '__main__':
     x_test_correct , y_test_correct = x_test[ids,:,:,:] , y_test[ids]
 
     print('Running Ghost networks attack')
-    eps = 16/255
+    eps = 32/255
     attack = torchattacks.MIFGSM(ghost_source_model, eps=eps, steps=10, decay=1.0)
     adv_images_GN = attack(x_test_correct, y_test_correct)
 
