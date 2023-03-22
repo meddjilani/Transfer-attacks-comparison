@@ -41,6 +41,21 @@ Gowal2020Uncovering_70_16_extra | 3 | 0.81 |
 Gowal2021Improving_28_10_ddpm_100m | 7 | 0.35 | 
 
 
+### Generalized Data-free Universal Adversarial Perturbations
+### eps = 8/255
+### num_images: 100 
+
+
+UAP 2       |
+----------- |
+0.92        |
+0.89        |   
+0.93        |
+0.94        |
+0.94        |
+0.61        |
+
+
 
 ### Source: Resnet50
 ### eps = 8/255
