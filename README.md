@@ -18,7 +18,7 @@ python MI-FGSM.py
 
 ## Results
 
-The following results are obtained by using the default parameters of each attack, no tuning have been made.
+The following results are obtained by using the default parameters of each attack, no tuning have been made.the top 5 rows are the robust accuracies of the top five robust models and the last row is the robust accuracy of the vanilla model.
 
 ### Query efficient meta attack
 ### distance: l2
@@ -41,6 +41,7 @@ Gowal2020Uncovering_70_16_extra | 3 | 0.81 |
 Gowal2021Improving_28_10_ddpm_100m | 7 | 0.35 | 
 
 
+
 ### Source: Resnet50
 ### eps = 8/255
 ### num_images: 100 
@@ -57,7 +58,7 @@ MI-FGSM  |  TI-FGSM  |  VMI-FGSM  |  VNI-FGSM  |  GN-MIFGSM  |  DI-FGSM
 
 ### Source: Resnet50
 ### eps = 16/255
-### num_images: 100 
+### num_images: 100
 
 MI-FGSM  |  VMI-FGSM  |  TI-FGSM  |  GN-MIFGSM  |  DI-FGSM  |  VNI-FGSM
 ---------|------------|-----------|-------------|-----------|----------
