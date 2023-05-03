@@ -13,7 +13,6 @@ import argparse
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
-    #select the first n images correctly classified by all targeted models
     parser.add_argument('--model', type=str, default='Gowal2021Improving_28_10_ddpm_100m')
     parser.add_argument('--target', type=str, default= 'Carmon2019Unlabeled')
     parser.add_argument('--n_examples', type=int, default=10)
