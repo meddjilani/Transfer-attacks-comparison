@@ -11,16 +11,20 @@ import json
 import robustbench
 
 
-import os #medben
+import os
+from robustbench.data import load_cifar10
+from cifar10_models.resnet import resnet50
 
 
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Attack Evaluation')
+parser.add_argument('--target', type=str, default= 'Standard')
+parser.add_argument('--n_examples', type=int, default=10)
 parser.add_argument('--input_dir', default='./cifar10_32', help='the path of original dataset') #medben
 parser.add_argument('--output_dir', default='adv_images', help='the path of the saved dataset')
 parser.add_argument('--arch', default='resnet50',
                     help='source model for black-box attack evaluation',)
-parser.add_argument('--batch-size', type=int, default=10, metavar='N',
+parser.add_argument('--batch_size', type=int, default=1, metavar='N',
                     help='input batch size for adversarial attack')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='disables CUDA training')
@@ -54,7 +58,7 @@ class Normalize(nn.Module):
         return (x - self.mean.type_as(x)[None,:,None,None]) / self.std.type_as(x)[None,:,None,None]
 
 
-def generate_adversarial_example(model, data_loader, adversary, img_path, label):
+def generate_adversarial_example(model, target_model, data_loader, adversary, img_path, label):
     """
     evaluate model by black-box attack
     """
@@ -76,20 +80,14 @@ def generate_adversarial_example(model, data_loader, adversary, img_path, label)
         if batch_idx % args.print_freq == 0:
             print('generating: [{0}/{1}]'.format(batch_idx, len(data_loader)))
     
-    target_model = robustbench.utils.load_model(model_name='Standard', dataset='cifar10', threat_model='Linf')
-    target_model.to(device)  
-    print('robust accuracy',robustbench.utils.clean_accuracy(target_model,adv_images ,label) )
+  
+    print(args.target, 'Robust Acc:', robustbench.utils.clean_accuracy(target_model,adv_images ,label))
 
 
 def main():
-    # create dataloader
 
-
-    with open('config_ids_source_targets.json','r') as f:
-        config = json.load(f)
-    ids = config['ids']
-    x,y = robustbench.data.load_cifar10()
-    x,y = x[ids,:,:,:], y[ids]
+    x_test, y_test = load_cifar10(n_examples=args.n_examples)
+    x_test, y_test = x_test.to(device), y_test.to(device)
 
     class ImageDataset(torch.utils.data.Dataset):
         def __init__(self, images, labels):
@@ -102,11 +100,15 @@ def main():
         def __getitem__(self, index):
             return self.images[index], self.labels[index], index
 
-    testset = ImageDataset(x, y)
-    data_loader = torch.utils.data.DataLoader(testset, batch_size=10)
+    testset = ImageDataset(x_test, y_test)
+    data_loader = torch.utils.data.DataLoader(testset, batch_size=args.batch_size)
+
+    target_model = robustbench.utils.load_model(model_name=args.target, dataset='cifar10', threat_model='Linf')
+    target_model.to(device)
+    print(args.target, 'Clean Acc:', robustbench.utils.clean_accuracy(target_model,x_test ,y_test))
 
     # create models
-    net = torch.load("resnet50.pth") #medben 
+    net = resnet50(pretrained=True)
     model = nn.Sequential(Normalize(mean=[0.4914, 0.4822, 0.4465], std= [0.2471, 0.2435, 0.2616]), net) #medben
     model = model.to(device)
     model.eval()
@@ -144,8 +146,8 @@ def main():
                                   eps=epsilon, nb_iter=args.num_steps, eps_iter=step_size,
                                   rand_init=False, clip_min=0.0, clip_max=1.0, targeted=False)
 
-    generate_adversarial_example(model=model, data_loader=data_loader,
-                                 adversary=adversary, img_path='adv_images', label = y)
+    generate_adversarial_example(model=model, target_model=target_model, data_loader=data_loader,
+                                 adversary=adversary, img_path='adv_images', label = y_test)
 
 
 if __name__ == '__main__':
