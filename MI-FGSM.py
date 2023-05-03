@@ -26,8 +26,8 @@ if __name__ == '__main__':
     parser.add_argument('--alpha', type=float,default=2/255)
     parser.add_argument('--decay', type=float,default= 1.0)
     parser.add_argument('--steps', type=int,default=10)
-
     args = parser.parse_args()
+    
     with open('config_ids_source_targets.json','r') as f:
         config = json.load(f)
 
