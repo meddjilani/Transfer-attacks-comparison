@@ -94,7 +94,7 @@ if __name__ == '__main__':
     # x_test_correct , y_test_correct = x_test[ids,:,:,:] , y_test[ids]
 
     print('Running MI-FGSM attack')
-    attack = torchattacks.MIFGSM(source_model, eps=args.eps, steps=args.steps, decay=args.decay)
+    attack = torchattacks.MIFGSM(source_model, eps=args.eps, alpha=args.alpha, steps=args.steps, decay=args.decay)
     adv_images_MI = attack(x_test, y_test)
 
 
