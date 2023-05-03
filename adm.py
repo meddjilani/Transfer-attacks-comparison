@@ -24,6 +24,7 @@ if __name__ == '__main__':
     parser.add_argument('--model', type=str, default='Gowal2021Improving_28_10_ddpm_100m')
     parser.add_argument('--target', type=str, default= 'Carmon2019Unlabeled')
     parser.add_argument('--n_examples', type=int, default=10)
+    parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument("--admix-m1", type=float, help="Admix")
     parser.add_argument("--admix-m2", type=float, help="Admix")
     parser.add_argument("--admix-portion", type=float, help="Admix")
@@ -41,7 +42,7 @@ if __name__ == '__main__':
     x_test, y_test = x_test.to(device), y_test.to(device)
 
     dataset_test = TensorDataset(x_test, y_test)
-    data_loader = DataLoader(dataset_test, batch_size=20)
+    data_loader = DataLoader(dataset_test, batch_size=args.batch_size)
 
     #admix
     attack = Admix_Attacker("admix",source_model, F.cross_entropy,args)
