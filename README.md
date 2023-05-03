@@ -2,6 +2,7 @@
 Comparing State of the art black-box attacks methods such as MI, DI, Admix, Ghost networks by attacking some robust models trained on cifar10 that are available in the robustbench leaderboad.
 
 ## Reproducing the results
+Download pretrained models on cifar-10 from : https://github.com/huyvnphan/PyTorch_CIFAR10.git 
 - Run the following command to get correctly classified images by all sources and targets models
 ```bash
 python data.py --sources Resnet50 --targets 1 2 3 61 --n_images 100
