@@ -1,3 +1,4 @@
+from comet_ml import Experiment
 import argparse
 import torch
 import torch.nn as nn
@@ -30,9 +31,9 @@ parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='disables CUDA training')
 parser.add_argument('--epsilon', default=8, type=float,
                     help='perturbation')
-parser.add_argument('--num-steps', default=10, type=int,
+parser.add_argument('--num-steps', dest='num_steps', default=10, type=int,
                     help='perturb number of steps')
-parser.add_argument('--step-size', default=2, type=float,
+parser.add_argument('--step-size', dest='step_size', default=2, type=float,
                     help='perturb step size')
 parser.add_argument('--gamma', default=0.5, type=float)
 parser.add_argument('--momentum', default=0.0, type=float)
@@ -80,8 +81,9 @@ def generate_adversarial_example(model, target_model, data_loader, adversary, im
         if batch_idx % args.print_freq == 0:
             print('generating: [{0}/{1}]'.format(batch_idx, len(data_loader)))
     
-  
-    print(args.target, 'Robust Acc:', robustbench.utils.clean_accuracy(target_model,adv_images ,label))
+    rob_acc = robustbench.utils.clean_accuracy(target_model, adv_images, label)
+    print(args.target, 'Robust Acc:', rob_acc)
+    return rob_acc
 
 
 def main():
@@ -105,7 +107,8 @@ def main():
 
     target_model = robustbench.utils.load_model(model_name=args.target, dataset='cifar10', threat_model='Linf')
     target_model.to(device)
-    print(args.target, 'Clean Acc:', robustbench.utils.clean_accuracy(target_model,x_test ,y_test))
+    acc = robustbench.utils.clean_accuracy(target_model,x_test ,y_test)
+    print(args.target, 'Clean Acc:', acc)
 
     # create models
     net = resnet50(pretrained=True)
@@ -146,9 +149,22 @@ def main():
                                   eps=epsilon, nb_iter=args.num_steps, eps_iter=step_size,
                                   rand_init=False, clip_min=0.0, clip_max=1.0, targeted=False)
 
-    generate_adversarial_example(model=model, target_model=target_model, data_loader=data_loader,
+    rob_acc = generate_adversarial_example(model=model, target_model=target_model, data_loader=data_loader,
                                  adversary=adversary, img_path='adv_images', label = y_test)
 
+
+    experiment = Experiment(
+    api_key="RDxdOE04VJ1EPRZK7oB9a32Gx",
+    project_name="Black-box attack comparison cifar10",
+    workspace="meddjilani",
+    )
+
+    metrics = {'Clean accuracy': acc, 'Robust accuracy': rob_acc}
+    experiment.log_metrics(metrics, step=1)
+
+    parameters = {'attack':'SGM', 'source':args.arch, 'target':args.target, 'n_examples':args.n_examples, 'epsilon':args.epsilon,
+                'num-steps':args.num_steps, 'step-size':args.step_size, 'gamma':args.gamma, 'momentum':args.momentum}
+    experiment.log_parameters(parameters)
 
 if __name__ == '__main__':
     main()

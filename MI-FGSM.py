@@ -1,3 +1,4 @@
+from comet_ml import Experiment
 import torch
 import torch.nn as nn
 from cifar10_models.resnet import *
@@ -97,11 +98,22 @@ if __name__ == '__main__':
     adv_images_MI = attack(x_test, y_test)
 
 
-    # MI_results = dict()
     acc = clean_accuracy(target_model, x_test, y_test) 
     rob_acc = clean_accuracy(target_model, adv_images_MI, y_test) 
     print(args.target, 'Clean Acc: %2.2f %%'%(acc*100))
     print(args.target, 'Robust Acc: %2.2f %%'%(rob_acc*100))
+
+    experiment = Experiment(
+    api_key="RDxdOE04VJ1EPRZK7oB9a32Gx",
+    project_name="Black-box attack comparison cifar10",
+    workspace="meddjilani",
+    )
+
+    metrics = {'Clean accuracy': acc, 'Robust accuracy': rob_acc}
+    experiment.log_metrics(metrics, step=1)
+
+    parameters = {'attack':'MI-FGSM', 'source':args.model, 'target':args.target, 'n_examples':args.n_examples, 'eps':args.eps, 'alpha':args.alpha, 'steps':args.steps, 'decay':args.decay}
+    experiment.log_parameters(parameters)
 
     # for i,target_model in enumerate(target_models):
     #     acc = clean_accuracy(target_model, adv_images_MI, y_test_correct)

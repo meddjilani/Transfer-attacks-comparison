@@ -1,3 +1,4 @@
+from comet_ml import Experiment
 import tqdm
 import torch
 import torch.nn as nn
@@ -18,16 +19,15 @@ from Normalize import Normalize
 from admix import Admix_Attacker
 import argparse
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', type=str, default='Gowal2021Improving_28_10_ddpm_100m')
     parser.add_argument('--target', type=str, default= 'Carmon2019Unlabeled')
     parser.add_argument('--n_examples', type=int, default=10)
     parser.add_argument('--batch_size', type=int, default=1)
-    parser.add_argument("--admix-m1", type=float, help="Admix")
-    parser.add_argument("--admix-m2", type=float, help="Admix")
-    parser.add_argument("--admix-portion", type=float, help="Admix")
+    parser.add_argument("--admix-m1", dest='admix_m1', type=float, help="Admix")
+    parser.add_argument("--admix-m2", dest='admix_m2', type=float, help="Admix")
+    parser.add_argument("--admix-portion", dest='admix_portion', type=float, help="Admix")
     args = parser.parse_args()
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -69,3 +69,16 @@ if __name__ == '__main__':
     rob_acc = clean_accuracy(target_model, adv_images_Admix, y_test) 
     print(args.target, 'Clean Acc: %2.2f %%'%(acc*100))
     print(args.target, 'Robust Acc: %2.2f %%'%(rob_acc*100))
+
+    experiment = Experiment(
+    api_key="RDxdOE04VJ1EPRZK7oB9a32Gx",
+    project_name="Black-box attack comparison cifar10",
+    workspace="meddjilani",
+    )
+
+    metrics = {'Clean accuracy': acc, 'Robust accuracy': rob_acc}
+    experiment.log_metrics(metrics, step=1)
+
+    parameters = {'attack':'adm', 'source':args.model, 'target':args.target, 'n_examples':args.n_examples,
+                  'admix-m1':args.admix_m1, 'admix-m2':args.admix_m2, 'admix-portion':args.admix_portion}
+    experiment.log_parameters(parameters)
