@@ -100,7 +100,7 @@ def main():
         image, label = image.to(device), label.to(device)
         lr_w = float(args.lr) # re-initialize
         image = torch.squeeze(image)
-        im_np = np.array(image)
+        im_np = np.array(image.cpu())
         gt_label = label
         # gt_label_name = imagenet_names[gt_label].split(',')[0]
         tgt_label = args.target_label
