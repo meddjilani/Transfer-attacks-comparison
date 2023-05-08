@@ -43,7 +43,7 @@ def main():
     parser.add_argument("--lr", type=float, default=5e-3, help="learning rate of w")
     parser.add_argument("--iterw", type=int, default=50, help="iterations of updating w")
     parser.add_argument("--n_im", type=int, default=10, help="number of images")
-    parser.add_argument("-untargeted", type=bool, default= True, help="run untargeted attack")
+    parser.add_argument("--untargeted", type=bool, default= True, help="run untargeted attack")
     args = parser.parse_args()
 
     print('untargeted:', args.untargeted)
