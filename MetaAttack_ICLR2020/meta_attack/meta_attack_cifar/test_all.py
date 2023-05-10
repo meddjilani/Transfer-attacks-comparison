@@ -4,24 +4,31 @@ import sys
 import torch
 import copy
 import numpy as np
-import random
-import time
-import argparse
-import torch.nn.functional as F
-import torch.nn as nn
+import time, json
 import torch.optim as optim
-import pdb
 
-from torch.utils.data import DataLoader
 from attacks.cw_black import BlackBoxL2
 from data import load_data
-from PIL import Image
-from learner import Learner
 from attacks.generate_gradient import generate_gradient
 
 from load_attacked_and_meta_model import load_attacked_model, load_meta_model
-from utils import Logger,save_gradient
+
 from options import args
+from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
+
+config = {}
+if os.path.exists('config_ids_source_targets.json'):
+    with open('config_ids_source_targets.json', 'r') as f:
+        config = json.load(f)
+
+experiment = Experiment(
+    api_key=COMET_APIKEY,
+    project_name=COMET_PROJECT,
+    workspace=COMET_WORKSPACE,
+)
+
+parameters = {'attack': 'Meta', **vars(args), **config}
+experiment.log_parameters(parameters)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 def main( device):
@@ -138,20 +145,13 @@ def main( device):
         sys.stdout.flush()
     
         
-    experiment = Experiment(
-    api_key="RDxdOE04VJ1EPRZK7oB9a32Gx",
-    project_name="Black-box attack comparison cifar10",
-    workspace="meddjilani",
-    )
+
     if total_success != 0:
-        metrics = {'Robust accuracy': 1-total_success / float(img_no), 'Queries':avg_qry / total_success}
+        metrics = {'robust_acc': 1-total_success / float(img_no), 'Queries':avg_qry / total_success}
     else:
-        metrics = {'Robust accuracy': 1-total_success / float(img_no), 'Queries':0}
+        metrics = {'robust_acc': 1-total_success / float(img_no), 'Queries':0}
     experiment.log_metrics(metrics, step=1)
-    
-    parameters = {'attack':'Meta attack', 'target':args.attacked_model, 'n_examples':args.n_examples, 'maxiter':args.maxiter,'max_fintune_iter':args.max_fintune_iter, 'finetune_interval':args.finetune_interval, 'learning_rate':args.learning_rate, 'update_pixels':args.update_pixels, 'simba_update_pixels':args.simba_update_pixels, 'total_number':args.total_number, 'untargeted':args.untargeted, 'istransfer':args.istransfer
-    }
-    experiment.log_parameters(parameters)
+
 
 if __name__ == "__main__":
     USE_DEVICE = torch.cuda.is_available()

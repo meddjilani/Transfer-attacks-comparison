@@ -13,17 +13,14 @@ from pathlib import Path
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
-from matplotlib import pyplot as plt
-from PIL import Image
-from tqdm import tqdm
 
-from class_names_imagenet import lab_dict as imagenet_names
-from utils_bases import load_imagenet_1000, load_model, get_adv_np, get_label_loss
+from tqdm import tqdm
+from utils_bases import load_model, get_adv_np, get_label_loss
 from robustbench.utils import load_model
-import torch
+import torch, json, os
 from torchvision.datasets import CIFAR10
 import torchvision.transforms as transforms
-
+from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
 
 def main():
     parser = argparse.ArgumentParser(description="BASES attack")
@@ -45,6 +42,20 @@ def main():
     parser.add_argument("--n_im", type=int, default=10, help="number of images")
     parser.add_argument("--untargeted", type=bool, default= True, help="run untargeted attack")
     args = parser.parse_args()
+
+    config = {}
+    if os.path.exists('config_ids_source_targets.json'):
+        with open('config_ids_source_targets.json', 'r') as f:
+            config = json.load(f)
+
+    experiment = Experiment(
+        api_key=COMET_APIKEY,
+        project_name=COMET_PROJECT,
+        workspace=COMET_WORKSPACE,
+    )
+
+    parameters = {'attack': 'QueryEnsemble', **vars(args), **config}
+    experiment.log_parameters(parameters)
 
     print('untargeted:', args.untargeted)
     surrogate_names = args.surrogate_names
@@ -260,24 +271,13 @@ def main():
         print(f"query_list: {query_list}")
         print(f"avg queries: {np.mean(query_list)}")
 
-        experiment = Experiment(
-        api_key="RDxdOE04VJ1EPRZK7oB9a32Gx",
-        project_name="Black-box attack comparison cifar10",
-        workspace="meddjilani",
-        )
-
         if args.untargeted:
             rob_acc = 1-(len(success_idx_list)/(im_idx+1))
         else:
             rob_acc = 1-(len(success_idx_list_pretend)/(im_idx+1))
-        metrics = {'Robust accuracy': rob_acc, 'Queries': np.mean(query_list)}
+        metrics = {'robust_acc': rob_acc, 'Queries': np.mean(query_list)}
         experiment.log_metrics(metrics, step=1)
 
-        parameters = {'attack':'BASES', 'sources':args.surrogate_names, 'target':args.model_name, 'n_examples':args.n_im, 'eps':args.eps, 'bound':args.bound, 'iters':args.iters, 'fuse':args.fuse,
-                    'loss_name':args.loss_name, 'x':args.x, 'lr':args.lr,
-                    'untargeted':args.untargeted, 'target_label':args.target_label
-        }
-        experiment.log_parameters(parameters)
 
 
 

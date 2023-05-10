@@ -371,7 +371,7 @@ project_name="Black-box attack comparison cifar10",
 workspace="meddjilani",
 )
 
-metrics = {'Robust accuracy': 1-(torch.sum(torch.BoolTensor(success_list))/(args.n_examples)), 'Queries': torch.mean(torch.FloatTensor(queries_list))}
+metrics = {'robust_acc': 1-(torch.sum(torch.BoolTensor(success_list))/(args.n_examples)), 'Queries': torch.mean(torch.FloatTensor(queries_list))}
 experiment.log_metrics(metrics, step=1)
 
 parameters = {'attack':'GFCS', 'sources':args.surrogate_names, 'target':args.model_name, 'n_examples':args.n_examples, 'ODS':args.ODS,

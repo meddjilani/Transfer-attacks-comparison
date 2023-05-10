@@ -1,20 +1,12 @@
 from comet_ml import Experiment
-import tqdm
+import os
+import json
 import torch
-import torch.nn as nn
-from cifar10_models.resnet import *
-from cifar10_models.densenet import *
-from cifar10_models.vgg import *
 from robustbench.data import load_cifar10
 from robustbench.utils import load_model, clean_accuracy
-import torchattacks_ens.attacks.mifgsm as taamifgsm
-from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, TensorDataset
 from torch.nn import functional as F
-
-import json
-import os
-from Normalize import Normalize
+from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
 
 from admix import Admix_Attacker
 import argparse
@@ -29,6 +21,20 @@ if __name__ == '__main__':
     parser.add_argument("--admix-m2", dest='admix_m2', type=float, help="Admix")
     parser.add_argument("--admix-portion", dest='admix_portion', type=float, help="Admix")
     args = parser.parse_args()
+
+    config = {}
+    if os.path.exists('config_ids_source_targets.json'):
+        with open('config_ids_source_targets.json', 'r') as f:
+            config = json.load(f)
+
+    experiment = Experiment(
+        api_key=COMET_APIKEY,
+        project_name=COMET_PROJECT,
+        workspace=COMET_WORKSPACE,
+    )
+
+    parameters = {'attack': 'ADMIX', **vars(args), **config}
+    experiment.log_parameters(parameters)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -70,15 +76,6 @@ if __name__ == '__main__':
     print(args.target, 'Clean Acc: %2.2f %%'%(acc*100))
     print(args.target, 'Robust Acc: %2.2f %%'%(rob_acc*100))
 
-    experiment = Experiment(
-    api_key="RDxdOE04VJ1EPRZK7oB9a32Gx",
-    project_name="Black-box attack comparison cifar10",
-    workspace="meddjilani",
-    )
 
-    metrics = {'Clean accuracy': acc, 'Robust accuracy': rob_acc}
+    metrics = {'clean_acc': acc, 'robust_acc': rob_acc}
     experiment.log_metrics(metrics, step=1)
-
-    parameters = {'attack':'adm', 'source':args.model, 'target':args.target, 'n_examples':args.n_examples,
-                  'admix-m1':args.admix_m1, 'admix-m2':args.admix_m2, 'admix-portion':args.admix_portion}
-    experiment.log_parameters(parameters)

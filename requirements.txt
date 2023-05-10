@@ -4,3 +4,4 @@ torchattacks
 tqdm
 scipy>=1.4.1
 torch>=1.7.1
+advertorch

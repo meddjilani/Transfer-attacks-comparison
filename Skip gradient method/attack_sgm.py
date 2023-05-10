@@ -2,20 +2,16 @@ from comet_ml import Experiment
 import argparse
 import torch
 import torch.nn as nn
-from torchvision import transforms
 from advertorch.attacks import LinfPGDAttack, MomentumIterativeAttack
 
-#import pretrainedmodels
 from utils_sgm import register_hook_for_resnet, register_hook_for_densenet
-from utils_data import SubsetCifar10, save_images
-import json 
 import robustbench
 
-
-import os
+import os, json
 from robustbench.data import load_cifar10
 from cifar10_models.resnet import resnet50
 
+from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
 
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Attack Evaluation')
@@ -41,6 +37,20 @@ parser.add_argument('--print_freq', default=10, type=int)
 
 
 args = parser.parse_args()
+
+config = {}
+if os.path.exists('config_ids_source_targets.json'):
+    with open('config_ids_source_targets.json', 'r') as f:
+        config = json.load(f)
+
+experiment = Experiment(
+    api_key=COMET_APIKEY,
+    project_name=COMET_PROJECT,
+    workspace=COMET_WORKSPACE,
+)
+
+parameters = {'attack': 'SGM', **vars(args), **config}
+experiment.log_parameters(parameters)
 
 # settings
 use_cuda = not args.no_cuda and torch.cuda.is_available()
@@ -152,14 +162,7 @@ def main():
     rob_acc = generate_adversarial_example(model=model, target_model=target_model, data_loader=data_loader,
                                  adversary=adversary, img_path='adv_images', label = y_test)
 
-
-    experiment = Experiment(
-    api_key="RDxdOE04VJ1EPRZK7oB9a32Gx",
-    project_name="Black-box attack comparison cifar10",
-    workspace="meddjilani",
-    )
-
-    metrics = {'Clean accuracy': acc, 'Robust accuracy': rob_acc}
+    metrics = {'clean_acc': acc, 'robust_acc': rob_acc}
     experiment.log_metrics(metrics, step=1)
 
     parameters = {'attack':'SGM', 'source':args.arch, 'target':args.target, 'n_examples':args.n_examples, 'epsilon':args.epsilon,
