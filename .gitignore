@@ -9,3 +9,4 @@ data
 *.pth
 *.pt
 *.json
+app_config.py
