@@ -1,7 +1,7 @@
 #!/bin/bash -l
 
 #SBATCH --mail-user=salah.ghamizi@uni.lu
-#SBATCH -J "C10_MIFGSM"
+#SBATCH -J "C10_DIFGSM"
 #SBATCH -N 1
 #SBATCH --ntasks-per-node=4
 #SBATCH -C volta
@@ -35,6 +35,6 @@ for MODEL in $MODELS
 do
  for TARGET in $MODELS
  do
-   CUDA_VISIBLE_DEVICES=0 python MI-FGSM.py --model $MODEL --target $TARGET --n_examples $N_EXAMPLES --eps $EPS --alpha $ALPHA --steps $STEPS --decay $DECAY
+   CUDA_VISIBLE_DEVICES=0 python DI-FGSM.py --model $MODEL --target $TARGET --n_examples $N_EXAMPLES --eps $EPS --alpha $ALPHA --steps $STEPS --decay $DECAY
  done
 done
