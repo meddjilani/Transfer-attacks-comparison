@@ -1,7 +1,7 @@
 #!/bin/bash -l
 
 #SBATCH --mail-user=salah.ghamizi@uni.lu
-#SBATCH -J "C10_MIFGSM"
+#SBATCH -J "C10_VNIFGSM"
 #SBATCH -N 1
 #SBATCH --ntasks-per-node=4
 #SBATCH -C volta
@@ -27,13 +27,14 @@ EPS=0.0313
 ALPHA=0.0078
 DECAY=1.0
 STEPS=100
-
+BETA=1.5
+N=5
 MODELS='Andriushchenko2020Understanding Carmon2019Unlabeled Gowal2021Improving_28_10_ddpm_100m Chen2020Adversarial Engstrom2019Robustness Wong2020Fast Ding2020MMA Gowal2021Improving_70_16_ddpm_100m Rebuffi2021Fixing_28_10_cutmix_ddpm Rebuffi2021Fixing_70_16_cutmix_extra'
 
 for MODEL in $MODELS
 do
  for TARGET in $MODELS
  do
-   CUDA_VISIBLE_DEVICES=0 python MI-FGSM.py --model $MODEL --target $TARGET --n_examples $N_EXAMPLES --eps $EPS --alpha $ALPHA --steps $STEPS --decay $DECAY
+   CUDA_VISIBLE_DEVICES=0 python VNI-FGSM.py --model $MODEL --target $TARGET --n_examples $N_EXAMPLES --eps $EPS --alpha $ALPHA --steps $STEPS --decay $DECAY --N $N --beta $BETA
  done
 done
