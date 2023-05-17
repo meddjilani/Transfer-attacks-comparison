@@ -40,7 +40,7 @@ def main():
     parser.add_argument("--lr", type=float, default=5e-3, help="learning rate of w")
     parser.add_argument("--iterw", type=int, default=50, help="iterations of updating w")
     parser.add_argument("--n_im", type=int, default=10, help="number of images")
-    parser.add_argument("--untargeted", type=bool, default= True, help="run untargeted attack")
+    parser.add_argument("--untargeted", action='store_true', help="run untargeted attack")
     args = parser.parse_args()
 
     config = {}
@@ -57,7 +57,6 @@ def main():
     parameters = {'attack': 'QueryEnsemble', **vars(args), **config}
     experiment.log_parameters(parameters)
 
-    print('untargeted:', args.untargeted)
     surrogate_names = args.surrogate_names
     n_wb = len(surrogate_names)  
 
@@ -200,14 +199,12 @@ def main():
                     w_np = w_np_temp_plus
                     adv_np = adv_np_plus
                     loss_wb_list += losses_plus
-                    print(f"{idx_w} +")
                     last_idx = idx_w
                 else:
                     loss = loss_minus
                     w_np = w_np_temp_minus
                     adv_np = adv_np_minus
                     loss_wb_list += losses_minus
-                    print(f"{idx_w} -")
                     last_idx = idx_w
                     
                 
@@ -221,22 +218,13 @@ def main():
 
 
         print(f"im_idx: {im_idx}")
-        if im_idx in success_idx_list:
-            # save to txt
-            info = f"im_idx: {im_idx}, iters: {query_list[-1]}, loss: {loss:.2f}, w: {w_np.squeeze().tolist()}\n"
-            file = open(exp_root / f'{exp}.txt', 'a')
-            file.write(f"{info}")
-            file.close()
-        print(f"targeted. total_success: {len(success_idx_list)}; success_rate: {len(success_idx_list)/(im_idx+1)}, avg queries: {np.mean(query_list)}")
+        print("label_idx:",label_idx, ". gt_label:", gt_label)
 
-        if im_idx in success_idx_list_pretend:
-            # save to txt
-            info = f"im_idx: {im_idx}, iters: {query_list_pretend[-1]}, loss: {loss:.2f}, w: {w_np.squeeze().tolist()}\n"
-            file = open(exp_root / f'{exp}_pretend.txt', 'a')
-            file.write(f"{info}")
-            file.close()
-        print(f"untargeted. total_success: {len(success_idx_list_pretend)}; success_rate: {len(success_idx_list_pretend)/(im_idx+1)}, avg queries: {np.mean(query_list_pretend)}")
 
+        if (args.untargeted):
+            print(f"untargeted. total_success: {len(success_idx_list)}; success_rate: {len(success_idx_list)/(im_idx+1)}, avg queries: {np.mean(query_list)}")
+        else:
+            print(f"targeted. total_success: {len(success_idx_list)}; success_rate: {len(success_idx_list)/(im_idx+1)}, avg queries: {np.mean(query_list)}")
 
         # save adv image
         # adv_path = adv_root / f"{img_paths[im_idx].name}"
@@ -268,15 +256,16 @@ def main():
         #     plt.savefig(exp_root / f"{exp_name}.png")
         # plt.close()
 
-        print(f"query_list: {query_list}")
-        print(f"avg queries: {np.mean(query_list)}")
+    if (not args.untargeted):
+        print("When crafting targeted adversarial examples to ",tgt_label)
+        print(f"It achived for untargeted attack. total_success: {len(success_idx_list_pretend)}; success_rate: {len(success_idx_list_pretend)/(im_idx+1)}, avg queries: {np.mean(query_list_pretend)}")
+    
+    print(f"query_list: {query_list}")
+    print(f"avg queries: {np.mean(query_list)}")
 
-        if args.untargeted:
-            rob_acc = 1-(len(success_idx_list)/(im_idx+1))
-        else:
-            rob_acc = 1-(len(success_idx_list_pretend)/(im_idx+1))
-        metrics = {'robust_acc': rob_acc, 'Queries': np.mean(query_list)}
-        experiment.log_metrics(metrics, step=1)
+    rob_acc = 1-(len(success_idx_list)/(im_idx+1))
+    metrics = {'robust_acc': rob_acc, 'Queries': np.mean(query_list)}
+    experiment.log_metrics(metrics, step=1)
 
 
 

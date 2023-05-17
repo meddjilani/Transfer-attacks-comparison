@@ -22,7 +22,7 @@ python test_all.py --attacked_model Carmon2019Unlabeled --n_examples 3 --maxiter
   
 
 #Move to Bases 
-python query_w_bb.py --model_name Carmon2019Unlabeled --surrogate_names Ding2020MMA Standard --bound linf --eps 8 --iters 10 --gpu 0 --fuse loss --loss_name cw --x 3 --lr 0.005 --iterw 50 --n_im 2 --untargeted True
+python query_w_bb.py --model_name Carmon2019Unlabeled --surrogate_names Ding2020MMA Standard --bound linf --eps 8 --iters 10 --gpu 0 --fuse loss --loss_name cw --x 3 --lr 0.005 --iterw 50 --n_im 2 --untargeted
 
 #Move to Bases/comparison/GFCS
 python GFCS_main.py --model_name Carmon2019Unlabeled --surrogate_names Ding2020MMA Standard --n_examples 3 --target_label 2 --GFCS --num_step 500 --linf 0.0625 --step_size 0.005 --device cuda
