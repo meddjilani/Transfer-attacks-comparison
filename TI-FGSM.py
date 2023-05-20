@@ -7,7 +7,7 @@ import json
 import os
 import argparse
 from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
-
+from torch.utils.data import TensorDataset, DataLoader
 
 if __name__ == '__main__':
 
@@ -25,6 +25,8 @@ if __name__ == '__main__':
     parser.add_argument('--kernel_name', type=str,default= 'gaussian')
     parser.add_argument('--len_kernel', type=int,default= 15)
     parser.add_argument('--nsig', type=int,default= 3)
+    parser.add_argument('--batch_size', type=int, default=100)
+    parser.add_argument("--dataset", choices=["mnist", "cifar10", "imagenet"], default="cifar10")
 
     args = parser.parse_args()
 
@@ -50,20 +52,26 @@ if __name__ == '__main__':
     target_model = load_model(model_name= args.target, dataset='cifar10', threat_model='Linf')
     target_model.to(device)
 
-    x_test, y_test = load_cifar10(n_examples=args.n_examples)
-    x_test, y_test = x_test.to(device), y_test.to(device)
+    x_t, y_t = load_cifar10(n_examples=args.n_examples) if args.dataset == "cifar10" else None
+    dataset = TensorDataset(torch.FloatTensor(x_t), torch.LongTensor(y_t))
 
-    print('Running TI-FGSM attack')
-    attack = torchattacks.TIFGSM(source_model, eps=args.eps, alpha=args.alpha, steps=args.steps, decay=args.decay,
-                                resize_rate=args.resize_rate, diversity_prob=args.diversity_prob, random_start=args.random_start,
-                                kernel_name=args.kernel_name, len_kernel=args.len_kernel, nsig=args.nsig)
-    adv_images_TI = attack(x_test, y_test)
+    loader = DataLoader(dataset, batch_size=args.batch_size,
+                        pin_memory=True)
 
-    acc = clean_accuracy(target_model, x_test, y_test) 
-    rob_acc = clean_accuracy(target_model, adv_images_TI, y_test) 
-    print(args.target, 'Clean Acc: %2.2f %%'%(acc*100))
-    print(args.target, 'Robust Acc: %2.2f %%'%(rob_acc*100))
+    for batch_ndx, (x_test, y_test) in enumerate(loader):
+        x_test, y_test = x_test.to(device), y_test.to(device)
 
-    metrics = {'clean_acc': acc, 'robust_acc': rob_acc}
-    experiment.log_metrics(metrics, step=1)
+        print('Running TI-FGSM attack')
+        attack = torchattacks.TIFGSM(source_model, eps=args.eps, alpha=args.alpha, steps=args.steps, decay=args.decay,
+                                    resize_rate=args.resize_rate, diversity_prob=args.diversity_prob, random_start=args.random_start,
+                                    kernel_name=args.kernel_name, len_kernel=args.len_kernel, nsig=args.nsig)
+        adv_images_TI = attack(x_test, y_test)
+
+        acc = clean_accuracy(target_model, x_test, y_test)
+        rob_acc = clean_accuracy(target_model, adv_images_TI, y_test)
+        print(args.target, 'Clean Acc: %2.2f %%'%(acc*100))
+        print(args.target, 'Robust Acc: %2.2f %%'%(rob_acc*100))
+
+        metrics = {'clean_acc': acc, 'robust_acc': rob_acc}
+        experiment.log_metrics(metrics, step=1)
 

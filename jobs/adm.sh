@@ -31,6 +31,6 @@ for MODEL in $MODELS
 do
  for TARGET in $MODELS
  do
-   CUDA_VISIBLE_DEVICES=0 python adm.py --model $MODEL --target $TARGET --n_examples $N_EXAMPLES --admix-m1 $M1 --admix-m2 $M2
+   CUDA_VISIBLE_DEVICES=0 python adm.py --model $MODEL --target $TARGET --n_examples $N_EXAMPLES --admix-m1 $M1 --admix-m2 $M2 --batch_size $BATCH_SIZE
  done
 done
