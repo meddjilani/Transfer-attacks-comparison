@@ -2,9 +2,9 @@ from comet_ml import Experiment
 import argparse
 import torch
 import torch.nn as nn
-from advertorch.attacks import LinfPGDAttack, MomentumIterativeAttack
+from torchattacks.attacks import pgd, mifgsm
 
-from utils_sgm import register_hook_for_resnet, register_hook_for_densenet
+from Skip_gradient_method.utils_sgm import register_hook_for_resnet, register_hook_for_densenet
 import robustbench
 
 import os, json
@@ -12,6 +12,7 @@ from robustbench.data import load_cifar10
 from cifar10_models.resnet import resnet50
 
 from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
+from torch.utils.data import TensorDataset, DataLoader
 
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Attack Evaluation')
@@ -34,6 +35,7 @@ parser.add_argument('--step-size', dest='step_size', default=2, type=float,
 parser.add_argument('--gamma', default=0.5, type=float)
 parser.add_argument('--momentum', default=0.0, type=float)
 parser.add_argument('--print_freq', default=10, type=int)
+parser.add_argument("--dataset", choices=["mnist", "cifar10", "imagenet"], default="cifar10")
 
 
 args = parser.parse_args()
@@ -80,7 +82,7 @@ def generate_adversarial_example(model, target_model, data_loader, adversary, im
             inputs.to(device), true_class.to(device)
 
         # attack
-        inputs_adv = adversary.perturb(inputs, true_class)
+        inputs_adv = adversary(inputs, true_class)
         # save_images(inputs_adv.detach().cpu().numpy(), img_list=img_path,
         #             idx=idx, output_dir=args.output_dir)
         if batch_idx==0:
@@ -149,15 +151,13 @@ def main():
 
     if args.momentum > 0.0:
         print('using PGD attack with momentum = {}'.format(args.momentum))
-        adversary = MomentumIterativeAttack(predict=model, loss_fn=nn.CrossEntropyLoss(reduction="sum"),
-                                            eps=epsilon, nb_iter=args.num_steps, eps_iter=step_size,
-                                            decay_factor=args.momentum,
-                                            clip_min=0.0, clip_max=1.0, targeted=False)
+
+        adversary = mifgsm.MIFGSM(eps=epsilon, alpha=step_size, steps=args.num_steps, decay=args.momentum)
+        adversary.targeted = False
     else:
         print('using linf PGD attack')
-        adversary = LinfPGDAttack(predict=model, loss_fn=nn.CrossEntropyLoss(reduction="sum"),
-                                  eps=epsilon, nb_iter=args.num_steps, eps_iter=step_size,
-                                  rand_init=False, clip_min=0.0, clip_max=1.0, targeted=False)
+        adversary= pgd.PGD(eps=epsilon, alpha=step_size, steps=args.num_steps,random_start=False)
+        adversary.targeted = False
 
     rob_acc = generate_adversarial_example(model=model, target_model=target_model, data_loader=data_loader,
                                  adversary=adversary, img_path='adv_images', label = y_test)
