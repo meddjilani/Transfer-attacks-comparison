@@ -13,8 +13,8 @@ def backward_hook(gamma):
 
 def backward_hook_norm(module, grad_in, grad_out):
     # normalize the gradient to avoid gradient explosion or vanish
-    std = torch.std(grad_in[0])
-    return (grad_in[0] / std,)
+    std = torch.std(grad_in[0]), torch.std(grad_in[1])
+    return (grad_in[0] / std[0],grad_in[1] / std[1])
 
 
 def register_hook_for_resnet(model, arch, gamma):
@@ -25,8 +25,9 @@ def register_hook_for_resnet(model, arch, gamma):
     backward_hook_sgm = backward_hook(gamma)
 
     for name, module in model.named_modules():
-        if 'relu' in name and not '.relu' in name and not name=='relu':
-            module.register_backward_hook(backward_hook_sgm)
+        if "relu" in name:
+            if name!="relu" and not '0.relu' in name:
+                module.register_backward_hook(backward_hook_sgm)
 
         # e.g., 1.layer1.1, 1.layer4.2, ...
         # if len(name.split('.')) == 3:
