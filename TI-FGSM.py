@@ -25,7 +25,7 @@ if __name__ == '__main__':
     parser.add_argument('--kernel_name', type=str,default= 'gaussian')
     parser.add_argument('--len_kernel', type=int,default= 15)
     parser.add_argument('--nsig', type=int,default= 3)
-    parser.add_argument('--batch_size', type=int, default=100)
+    parser.add_argument('--batch_size', type=int, default=512)
     parser.add_argument("--dataset", choices=["mnist", "cifar10", "imagenet"], default="cifar10")
 
     args = parser.parse_args()

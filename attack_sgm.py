@@ -152,11 +152,11 @@ def main():
     if args.momentum > 0.0:
         print('using PGD attack with momentum = {}'.format(args.momentum))
 
-        adversary = mifgsm.MIFGSM(eps=epsilon, alpha=step_size, steps=args.num_steps, decay=args.momentum)
+        adversary = mifgsm.MIFGSM(model=model,eps=epsilon, alpha=step_size, steps=args.num_steps, decay=args.momentum)
         adversary.targeted = False
     else:
         print('using linf PGD attack')
-        adversary= pgd.PGD(eps=epsilon, alpha=step_size, steps=args.num_steps,random_start=False)
+        adversary= pgd.PGD(model=model,eps=epsilon, alpha=step_size, steps=args.num_steps,random_start=False)
         adversary.targeted = False
 
     rob_acc = generate_adversarial_example(model=model, target_model=target_model, data_loader=data_loader,

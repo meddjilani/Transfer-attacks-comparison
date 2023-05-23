@@ -6,7 +6,7 @@
 #SBATCH --ntasks-per-node=4
 #SBATCH -C volta
 #SBATCH -G 1
-#SBATCH --time=16:00:00
+#SBATCH --time=24:00:00
 #SBATCH -p gpu
 #SBATCH --mail-type=end,fail
 

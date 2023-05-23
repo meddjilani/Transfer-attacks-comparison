@@ -6,7 +6,7 @@
 #SBATCH --ntasks-per-node=4
 #SBATCH -C volta
 #SBATCH -G 1
-#SBATCH --time=16:00:00
+#SBATCH --time=24:00:00
 #SBATCH -p gpu
 #SBATCH --mail-type=end,fail
 
@@ -26,10 +26,11 @@ BATCH_SIZE=512
 M1=0.5
 M2=0.5
 MODELS='Andriushchenko2020Understanding Carmon2019Unlabeled Gowal2021Improving_28_10_ddpm_100m Chen2020Adversarial Engstrom2019Robustness Wong2020Fast Ding2020MMA Gowal2021Improving_70_16_ddpm_100m Rebuffi2021Fixing_28_10_cutmix_ddpm Rebuffi2021Fixing_70_16_cutmix_extra'
+TARGETS='Carmon2019Unlabeled Gowal2021Improving_28_10_ddpm_100m Chen2020Adversarial Engstrom2019Robustness Wong2020Fast Ding2020MMA Gowal2021Improving_70_16_ddpm_100m Rebuffi2021Fixing_28_10_cutmix_ddpm Rebuffi2021Fixing_70_16_cutmix_extra'
 
 for MODEL in $MODELS
 do
- for TARGET in $MODELS
+ for TARGET in $TARGETS
  do
    CUDA_VISIBLE_DEVICES=0 python adm.py --model $MODEL --target $TARGET --n_examples $N_EXAMPLES --admix-m1 $M1 --admix-m2 $M2 --batch_size $BATCH_SIZE
  done

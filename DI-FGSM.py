@@ -22,7 +22,7 @@ if __name__ == '__main__':
     parser.add_argument('--resize_rate', type=float,default= 0.9)
     parser.add_argument('--diversity_prob', type=float,default= 0.5)
     parser.add_argument('--random_start', type=bool,default= True)
-    parser.add_argument('--batch_size', type=int, default=100)
+    parser.add_argument('--batch_size', type=int, default=512)
     parser.add_argument("--dataset", choices=["mnist", "cifar10", "imagenet"], default="cifar10")
     args = parser.parse_args()
 

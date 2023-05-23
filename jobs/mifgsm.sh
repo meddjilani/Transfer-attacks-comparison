@@ -6,7 +6,7 @@
 #SBATCH --ntasks-per-node=4
 #SBATCH -C volta
 #SBATCH -G 1
-#SBATCH --time=16:00:00
+#SBATCH --time=24:00:00
 #SBATCH -p gpu
 #SBATCH --mail-type=end,fail
 
@@ -30,7 +30,7 @@ STEPS=100
 
 MODELS='Andriushchenko2020Understanding Carmon2019Unlabeled Gowal2021Improving_28_10_ddpm_100m Chen2020Adversarial Engstrom2019Robustness Wong2020Fast Ding2020MMA Gowal2021Improving_70_16_ddpm_100m Rebuffi2021Fixing_28_10_cutmix_ddpm Rebuffi2021Fixing_70_16_cutmix_extra'
 #Gowal2021Improving_70_16_ddpm_100m  Rebuffi2021Fixing_70_16_cutmix_extra Chen2020Adversarial
-MODELS='Andriushchenko2020Understanding Carmon2019Unlabeled Gowal2021Improving_28_10_ddpm_100m  Engstrom2019Robustness Rebuffi2021Fixing_28_10_cutmix_ddpm Wong2020Fast Ding2020MMA'
+MODELS='Wong2020Fast Ding2020MMA'
 TARGETS='Andriushchenko2020Understanding Carmon2019Unlabeled Gowal2021Improving_28_10_ddpm_100m Chen2020Adversarial Engstrom2019Robustness Wong2020Fast Ding2020MMA Gowal2021Improving_70_16_ddpm_100m Rebuffi2021Fixing_28_10_cutmix_ddpm Rebuffi2021Fixing_70_16_cutmix_extra'
 
 for MODEL in $MODELS
