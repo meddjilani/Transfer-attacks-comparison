@@ -16,6 +16,7 @@ from torch.utils.data import TensorDataset, DataLoader
 
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Attack Evaluation')
+parser.add_argument('--model', type=str, default='Gowal2021Improving_28_10_ddpm_100m')
 parser.add_argument('--target', type=str, default= 'Standard')
 parser.add_argument('--n_examples', type=int, default=10)
 parser.add_argument('--input_dir', default='./cifar10_32', help='the path of original dataset') #medben
@@ -117,17 +118,22 @@ def main():
     testset = ImageDataset(x_test, y_test)
     data_loader = torch.utils.data.DataLoader(testset, batch_size=args.batch_size)
 
-    target_model = robustbench.utils.load_model(model_name=args.target, dataset='cifar10', threat_model='Linf')
+    target_model = robustbench.utils.load_model(model_name=args.target, dataset=args.dataset, threat_model='Linf')
     target_model.to(device)
     acc = robustbench.utils.clean_accuracy(target_model,x_test ,y_test)
     print(args.target, 'Clean Acc:', acc)
 
     # create models
-    net = resnet50(pretrained=True)
-    model = nn.Sequential(Normalize(mean=[0.4914, 0.4822, 0.4465], std= [0.2471, 0.2435, 0.2616]), net) #medben
+    if args.model!="":
+        model = robustbench.utils.load_model(model_name=args.model, dataset=args.dataset, threat_model='Linf')
+        args.arch = str(model.__class__).split(".")[-1].lower()[:-2]
+        experiment.log_parameter("arch",args.arch)
+    else:
+        net = resnet50(pretrained=True)
+        model = nn.Sequential(Normalize(mean=[0.4914, 0.4822, 0.4465], std= [0.2471, 0.2435, 0.2616]), net) #medben
     model = model.to(device)
     model.eval()
-
+    print()
     # create adversary attack
     epsilon = args.epsilon / 255.0
     if args.step_size < 0:
@@ -141,10 +147,10 @@ def main():
 
     # using our method - Skip Gradient Method (SGM)
     if args.gamma < 1.0:
-        if args.arch in ['resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152']:
-            register_hook_for_resnet(model, arch=args.arch, gamma=args.gamma)
-        elif args.arch in ['densenet121', 'densenet169', 'densenet201']:
+        if "densenet" in args.arch:
             register_hook_for_densenet(model, arch=args.arch, gamma=args.gamma)
+        elif "resnet" in args.arch:
+            register_hook_for_resnet(model, arch=args.arch, gamma=args.gamma)
         else:
             raise ValueError('Current code only supports resnet/densenet. '
                              'You can extend this code to other architectures.')
