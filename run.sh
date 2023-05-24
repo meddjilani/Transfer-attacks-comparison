@@ -26,3 +26,6 @@ python query_w_bb.py --model_name Carmon2019Unlabeled --surrogate_names Ding2020
 
 #Move to Bases/comparison/GFCS
 python GFCS_main.py --model_name Carmon2019Unlabeled --surrogate_names Ding2020MMA Standard --n_examples 3 --target_label 2 --GFCS --num_step 500 --linf 0.0625 --step_size 0.005 --device cuda
+
+#Move to pytorch-gd-uap
+!python train.py --model Carmon2019Unlabeled --n_examples 1000 --max_iter 10000 --eps 8 --batch_size 100  --dataset_name cifar10 --patience_interval 5 --id 1 --prior_type no_data
