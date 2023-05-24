@@ -8,18 +8,20 @@ import os
 import argparse
 
 from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
-
+from torch.utils.data import TensorDataset, DataLoader
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, nargs = '+',default=['Gowal2021Improving_28_10_ddpm_100m', 'Standard'])
+    parser.add_argument('--model', type=str, nargs = '+',default=['Gowal2021Improving_70_16_ddpm_100m', 'Standard'])
     parser.add_argument('--target', type=str, default= 'Carmon2019Unlabeled')
     parser.add_argument('--n_examples', type=int, default=10)
     parser.add_argument('--eps', type = float, default=8/255)
     parser.add_argument('--alpha', type=float,default=2/255)
     parser.add_argument('--decay', type=float,default= 1.0)
     parser.add_argument('--steps', type=int,default=10)
+    parser.add_argument('--batch_size', type=int, default=512)
+    parser.add_argument("--dataset", choices=["mnist", "cifar10", "imagenet"], default="cifar10")
     args = parser.parse_args()
 
     config = {}
@@ -48,19 +50,24 @@ if __name__ == '__main__':
     target_model = load_model(model_name= args.target, dataset='cifar10', threat_model='Linf')
     target_model.to(device)
 
+    x_t, y_t = load_cifar10(n_examples=args.n_examples) if args.dataset == "cifar10" else None
+    dataset = TensorDataset(torch.FloatTensor(x_t), torch.LongTensor(y_t))
 
-    x_test, y_test = load_cifar10(n_examples=args.n_examples)
-    x_test, y_test = x_test.to(device), y_test.to(device)
+    loader = DataLoader(dataset, batch_size=args.batch_size,
+                        pin_memory=True)
 
-    print('Running MI-FGSM ENS attack')
-    attack = taamifgsm_ens.MIFGSM_ENS(source_models[0], source_models, eps=args.eps, alpha=args.alpha, steps=args.steps, decay=args.decay)
-    adv_images_MI_ENS = attack(x_test, y_test)
+    for batch_ndx, (x_test, y_test) in enumerate(loader):
+        x_test, y_test = x_test.to(device), y_test.to(device)
+
+        print('Running MI-FGSM ENS attack')
+        attack = taamifgsm_ens.MIFGSM_ENS(source_models[0], source_models, eps=args.eps, alpha=args.alpha, steps=args.steps, decay=args.decay)
+        adv_images_MI_ENS = attack(x_test, y_test)
 
 
-    acc = clean_accuracy(target_model, x_test, y_test) 
-    rob_acc = clean_accuracy(target_model, adv_images_MI_ENS, y_test) 
-    print(args.target, 'Clean Acc: %2.2f %%'%(acc*100))
-    print(args.target, 'Robust Acc: %2.2f %%'%(rob_acc*100))
+        acc = clean_accuracy(target_model, x_test, y_test)
+        rob_acc = clean_accuracy(target_model, adv_images_MI_ENS, y_test)
+        print(args.target, 'Clean Acc: %2.2f %%'%(acc*100))
+        print(args.target, 'Robust Acc: %2.2f %%'%(rob_acc*100))
 
-    metrics = {'clean_acc': acc, 'robust_acc': rob_acc}
-    experiment.log_metrics(metrics, step=1)
+        metrics = {'clean_acc': acc, 'robust_acc': rob_acc}
+        experiment.log_metrics(metrics, step=1)

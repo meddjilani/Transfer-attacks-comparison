@@ -65,7 +65,6 @@ class MIFGSM_ENS(Attack):
             for m in self.models[1:]:
                 logits = m(adv_images)
                 ensemble_outputs = ensemble_outputs + w*logits #w*
-            print(ensemble_outputs.shape, ensemble_outputs.requires_grad, ensemble_outputs.dtype)
             #/
 
             # Calculate loss

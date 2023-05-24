@@ -7,13 +7,15 @@ import numpy as np
 import time, json
 import torch.optim as optim
 
-from attacks.cw_black import BlackBoxL2
-from data import load_data
-from attacks.generate_gradient import generate_gradient
+sys.path.append("./MetaAttack_ICLR2020./meta_attack/")
 
-from load_attacked_and_meta_model import load_attacked_model, load_meta_model
+from meta_attack_cifar.attacks.cw_black import BlackBoxL2
+from meta_attack_cifar.data import load_data
+from meta_attack_cifar.attacks.generate_gradient import generate_gradient
 
-from options import args
+from meta_attack_cifar.load_attacked_and_meta_model import load_attacked_model, load_meta_model
+
+from meta_attack_cifar.options import args
 from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
 
 config = {}
