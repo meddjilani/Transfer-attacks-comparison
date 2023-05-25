@@ -3,21 +3,16 @@
 Based on paper by Carlini & Wagner, https://arxiv.org/abs/1608.04644 and a reference implementation at
 https://github.com/tensorflow/cleverhans/blob/master/cleverhans/attacks_tf.py
 """
-import os
-import sys
-import torch
+
 import numpy as np
 import torch.nn.functional as F
-from numba import jit
-from torch import optim
 from torch import autograd
 from .helpers import *
-import pdb
-from options import args
+
 
 class generate_gradient:
 
-    def __init__(self, device, targeted = False, classes = 10, debug = False):
+    def __init__(self, device, targeted = False, classes = 10, debug = False, args=None):
         self.debug = debug
         self.targeted = targeted # false
         self.num_classes = classes 

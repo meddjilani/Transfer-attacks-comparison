@@ -1,3 +1,3 @@
-from .cw_black import BlackBoxL2
+from .cw_black import BlackBoxLInf
 from .generate_gradient import generate_gradient
 

@@ -9,7 +9,7 @@ import torch.optim as optim
 
 sys.path.append("./MetaAttack_ICLR2020./meta_attack/")
 
-from meta_attack_cifar.attacks.cw_black import BlackBoxL2
+from meta_attack_cifar.attacks.cw_black import BlackBoxLInf
 from meta_attack_cifar.data import load_data
 from meta_attack_cifar.attacks.generate_gradient import generate_gradient
 
@@ -55,17 +55,19 @@ def main( device):
         generate_grad = generate_gradient(
                 device,
                 targeted = not args.untargeted,
+                args=args
                 )
-        attack = BlackBoxL2(
+        attack = BlackBoxLInf(
                 targeted = not args.untargeted,
-                max_steps = args.maxiter,
+                max_steps = args.steps,
+                eps=args.eps,
                 search_steps = args.binary_steps,
                 cuda = not args.no_cuda,
                 )
     
     os.system("mkdir -p {}/{}".format(args.save, args.dataset))
 
-    meta_optimizer = optim.Adam(meta_model.parameters(), lr = 0.01)
+    meta_optimizer = optim.Adam(meta_model.parameters(), lr = args.lr)
 
     img_no = 0
     total_success = 0
@@ -106,8 +108,7 @@ def main( device):
  
 
         #######################################################################
-        
-        
+
         
         adv, const, first_step,query_bias = attack.run(model, meta_model_copy, img, target, i)
         timeend = time.time()
@@ -118,7 +119,9 @@ def main( device):
         #print('adv min and max', torch.min(adv).item(), torch.max(adv).item(), '', torch.min(img).item(), torch.max(img).item())
         diff = (adv-img).cpu().numpy()
         l2_distortion = np.sum(diff**2)**.5
+        linf_distortion = np.max(diff)
         print('L2 distortion', l2_distortion)
+        print('Linf distortion', linf_distortion)
         
         adv_pred_logit = model(adv)
         adv_pred_label = adv_pred_logit.argmax(dim = 1)

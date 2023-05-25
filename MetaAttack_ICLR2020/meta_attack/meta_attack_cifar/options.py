@@ -21,13 +21,13 @@ parser = argparse.ArgumentParser()
 #important parameters 
 parser.add_argument("--n_examples", type = int, default = 3)
 
-parser.add_argument("--maxiter", type = int, default = 1000, help = "set 0 to use default value")
-
+parser.add_argument("--steps", type = int, default = 1000, help = "set 0 to use default value")
+parser.add_argument('--eps', type=float, default=8 / 255)
 parser.add_argument("--max_fintune_iter", type = int, default = 63, help = "maximum finetune iterations")
 
 parser.add_argument("--finetune_interval", type = int, default = 3, help = "iteration interval for finetuneing")
 
-parser.add_argument("--attacked_model", type = str, default = 'Carmon2019Unlabeled', help = 'the model selected to be attaked')
+parser.add_argument("--target", type = str, default = 'Carmon2019Unlabeled', help = 'the model selected to be attaked')
 parser.add_argument('--learning_rate', default = 1e-2, type = float, help = 'learning rate')
 parser.add_argument('--update_pixels', default = 125, type = int, help = 'updated pixels every iteration')
 parser.add_argument('--simba_update_pixels', default = 125, type = int, help = 'updated pixels every iteration')

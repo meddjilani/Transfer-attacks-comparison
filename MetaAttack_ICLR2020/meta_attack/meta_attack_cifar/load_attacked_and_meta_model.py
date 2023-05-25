@@ -1,5 +1,5 @@
 import torch
-from learner import Learner
+from meta_attack_cifar.learner import Learner
 from models import *
 from robustbench.utils import load_model
 config = [
@@ -28,20 +28,11 @@ config = [
    ]
 MODELS= ['VGG("VGG13")','VGG("VGG16")','VGG("VGG19")','VGG("VGG11")', 'ResNet18()', 'MobileNetV2()', 'SENet18()', 'GoogLeNet()', 'PreActResNet18()', 'MobileNet()']
 def load_attacked_model(args, index, device):
-    # i = index
-    # net = eval(MODELS[i])
-    # if MODELS[i].startswith("VGG"):
-    #     model_checkpoint_path = '../../checkpoints/targeted_model/cifar/' + net.__class__.__name__ + MODELS[i][-4:-2]+'_ckpt.t7'
-    # else:
-    #     model_checkpoint_path = '../../checkpoints/targeted_model/cifar/' + net.__class__.__name__ +'_ckpt.t7'
- 
-    net = load_model(model_name=args.attacked_model, dataset='cifar10', threat_model='Linf') #print('Loading chec.....)
-    # checkpoint = torch.load(model_checkpoint_path)
-    # net.load_state_dict(checkpoint['net'])
 
+    net = load_model(model_name=args.target, dataset=args.dataset, threat_model='Linf') #print('Loading chec.....)
     return net.to(device)
 
-class Meta(nn.Module):
+class Meta(torch.nn.Module):
     def __init__(self):
         super(Meta, self).__init__() 
         self.net = Learner(config, 3, 32)

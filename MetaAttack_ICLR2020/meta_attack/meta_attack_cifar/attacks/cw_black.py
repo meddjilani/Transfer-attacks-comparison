@@ -8,16 +8,12 @@ import sys
 import torch
 import numpy as np
 import torch.nn.functional as F
-from numba import jit
 from torch import optim
 from torch import autograd
 from .helpers import *
-import scipy.io as scio
-import pdb
 from .generate_gradient import generate_gradient
 import copy
-from scipy.special import softmax
-from options import args
+from meta_attack_cifar.options import args
 update_pixels = args.update_pixels
 GRAD_STORE = 0
 guided = False
@@ -97,7 +93,7 @@ def check_optimizer(indice,grad, model, input_var,target, modifier_var, up, down
 
 
 
-class BlackBoxL2:
+class BlackBoxLInf:
 
     def __init__(self, eps = 8/255, targeted = False, search_steps=None, max_steps=None, cuda=True, debug=False):
         self.debug = debug
@@ -146,7 +142,7 @@ class BlackBoxL2:
 
         if self.solver_name == 'adam':
             self.solver = coordinate_ADAM
-        elif solver != 'fake_zero':
+        elif self.solver_name != 'fake_zero':
             print('unknown solver', self.solver_name)
             self.solver = coordinate_ADAM
         print('Using', self.solver_name, 'solver')
