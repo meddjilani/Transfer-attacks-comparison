@@ -1,7 +1,6 @@
-import os
+
 import argparse
 from utils import save_gradient
-from Skip_gradient_method.utils_sgm import register_hook_for_resnet, register_hook_for_densenet
 from torch.utils.data import DataLoader
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
