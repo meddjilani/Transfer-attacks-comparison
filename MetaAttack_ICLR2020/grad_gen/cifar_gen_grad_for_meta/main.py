@@ -39,8 +39,10 @@ def run(args, device="cuda", path="./MetaAttack_ICLR2020/checkpoints/gradients/"
                              pin_memory=True)
 
     n_batches = args.n_examples // args.batch_size
-    save_gradient(target_model, device, test_loader, args.model, path, mode='test', n_batches=n_batches)
-    save_gradient(target_model, device, train_loader, args.model, path, mode='train',n_batches=n_batches)
+    save_gradient(target_model, device, test_loader, args.model, path, mode='test', n_batches=n_batches,
+                  dataset=args.dataset)
+    save_gradient(target_model, device, train_loader, args.model, path, mode='train',n_batches=n_batches,
+                  dataset=args.dataset)
 
 if __name__ == '__main__':
     use_cuda = torch.cuda.is_available()

@@ -144,7 +144,7 @@ def cw_loss(output, target):
     return loss
     
 def save_gradient(model, device, train_loader, model_name,save_path='./zoo_cw_grad_cifar/', mode = 'train',
-                  n_batches=0):
+                  n_batches=0, dataset="cifar10"):
     model.eval()
     correct  = 0
     loss_avg = 0
@@ -174,18 +174,16 @@ def save_gradient(model, device, train_loader, model_name,save_path='./zoo_cw_gr
         
         process_data[str(batch_idx)] = [data, grad, target]
 
+    nb_examples = batch_idx * len(target)
     loss_avg /= batch_idx
 
-    print('Average Loss: {:4f}%, Accuracy: {}/{} ({:.0f}%)\n'.format(
-            loss_avg, correct, len(train_loader.dataset),
-            100. * correct / len(train_loader.dataset)))
+    print('Average Loss: {:4f}%, Accuracy: {}/{} ({:.2f}%)\n'.format(
+            loss_avg, correct, nb_examples,
+            100. * correct / nb_examples))
     #save_path = './grad_mnist/' + mode
     save_path = save_path + mode
     if not os.path.exists(save_path):
         os.makedirs(save_path)
         
-    if model.__class__.__name__ == 'VGG':
-        save_file_path = save_path + '/' + model_name + '_cifar.npy'
-    else:
-        save_file_path = save_path + '/' + model.__class__.__name__ + '_cifar.npy'
+    save_file_path = save_path + '/' + model_name + '_{}.npy'.format(dataset)
     np.save(save_file_path, process_data)
