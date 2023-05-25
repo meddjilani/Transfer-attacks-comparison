@@ -43,8 +43,11 @@ def init_params(net):
             if m.bias:
                 init.constant(m.bias, 0)
 
+try:
+    _, term_width = os.popen('stty size', 'r').read().split()
+except:
+    term_width = 250
 
-_, term_width = os.popen('stty size', 'r').read().split()
 term_width = int(term_width)
 
 TOTAL_BAR_LENGTH = 65.
@@ -140,7 +143,8 @@ def cw_loss(output, target):
     loss = torch.sum(0.5 * loss) / len(target)
     return loss
     
-def save_gradient(model, device, train_loader, model_name, mode = 'train'):
+def save_gradient(model, device, train_loader, model_name,save_path='./zoo_cw_grad_cifar/', mode = 'train',
+                  n_batches=0):
     model.eval()
     correct  = 0
     loss_avg = 0
@@ -148,6 +152,8 @@ def save_gradient(model, device, train_loader, model_name, mode = 'train'):
     process_data = dict()
 
     for batch_idx, (data, target) in enumerate(train_loader):
+        if n_batches>0 and batch_idx>=n_batches:
+            break
         data, target = data.to(device), target.to(device)
         
         data.requires_grad_()
@@ -174,7 +180,7 @@ def save_gradient(model, device, train_loader, model_name, mode = 'train'):
             loss_avg, correct, len(train_loader.dataset),
             100. * correct / len(train_loader.dataset)))
     #save_path = './grad_mnist/' + mode
-    save_path = './zoo_cw_grad_cifar/' + mode
+    save_path = save_path + mode
     if not os.path.exists(save_path):
         os.makedirs(save_path)
         
