@@ -23,7 +23,7 @@ if __name__ == '__main__':
     parser.add_argument('--alpha', type=float,default=2/255)
     parser.add_argument('--decay', type=float,default= 1.0)
     parser.add_argument('--steps', type=int,default=10)
-    parser.add_argument('--batch_size', type=int, default=25)
+    parser.add_argument('--batch_size', type=int, default=50)
     parser.add_argument("--dataset", choices=["mnist", "cifar10", "imagenet"], default="cifar10")
 
     args = parser.parse_args()
