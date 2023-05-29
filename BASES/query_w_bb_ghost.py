@@ -41,6 +41,7 @@ def main():
     parser.add_argument("--lr", type=float, default=5e-3, help="learning rate of w")
     parser.add_argument("--iterw", type=int, default=50, help="iterations of updating w")
     parser.add_argument("--n_im", type=int, default=10, help="number of images")
+    parser.add_argument('--batch_size', type=int, default=5)
     parser.add_argument("--untargeted", action='store_true', help="run untargeted attack")
     args = parser.parse_args()
 
@@ -101,7 +102,7 @@ def main():
                     ])
 
     testset = CIFAR10(root='../data', train = False, download = True, transform = transform_test)
-    testloader = torch.utils.data.DataLoader(testset, batch_size = 1, sampler=torch.utils.data.sampler.SubsetRandomSampler(range(args.n_im)), shuffle = False)
+    testloader = torch.utils.data.DataLoader(testset, batch_size = args.batch_size, sampler=torch.utils.data.sampler.SubsetRandomSampler(range(args.n_im)), shuffle = False)
 
     success_idx_list = set()
     success_idx_list_pretend = set() # untargeted success
