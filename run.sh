@@ -29,3 +29,9 @@ python GFCS_main.py --model_name Carmon2019Unlabeled --surrogate_names Ding2020M
 
 #Move to pytorch-gd-uap
 python train.py --model Carmon2019Unlabeled --n_examples 1000 --max_iter 10000 --eps 8 --batch_size 100  --dataset_name cifar10 --patience_interval 5 --id 1 --prior_type no_data
+
+#TREMBA
+#before running, in config/ directory modify the train json file 
+python your_script.py --config config/train_untarget.json --surrogate_names Standard Ding2020MMA
+#before running, in config/ directory modify the attack  json file 
+python attack.py --config config/attack_untarget.json --device cuda --save_prefix your_save_prefix --model_name Carmon2019Unlabeled --generator_name Cifar10_Standard_Ding2020MMA_untarget --dataset cifar10
