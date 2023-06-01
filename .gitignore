@@ -11,3 +11,4 @@ data
 *.json
 app_config.py
 perturbations_uap
+saved_model/*
