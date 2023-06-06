@@ -1,5 +1,7 @@
 python MI-FGSM.py --model Gowal2021Improving_28_10_ddpm_100m --target Carmon2019Unlabeled --n_examples 10 --eps 0.031 --alpha 0.0078 --steps  10 --decay 1.0
 
+python GN-MI-FGSM.py --model Gowal2021Improving_28_10_ddpm_100m --target Carmon2019Unlabeled --n_examples 10 --eps 0.031 --alpha 0.0078 --steps  10 --decay 1.0
+
 python DI-FGSM.py --model Gowal2021Improving_28_10_ddpm_100m --target Carmon2019Unlabeled --n_examples 10 --eps 0.031 --alpha 0.0078 --steps  10 --decay 1.0 --resize_rate 0.9 --diversity_prob 0.5 --random_start False
 
 python MI-FGSM_ENS.py --model Gowal2021Improving_28_10_ddpm_100m Standard --target Carmon2019Unlabeled --n_examples 10 --eps 0.031 --alpha 0.0078 --steps  10 --decay 1.0
@@ -32,7 +34,7 @@ python train.py --model Carmon2019Unlabeled --n_examples 1000 --max_iter 10000 -
 
 #TREMBA
 #before running, in config/ directory modify the train json file 
-python your_script.py --config config/train_untarget.json --surrogate_names Standard Ding2020MMA
+python train_generator.py --config config/train_untarget.json --surrogate_names Standard Ding2020MMA
 #before running, in config/ directory modify the attack  json file 
 python attack.py --config config/attack_untarget.json --device cuda --save_prefix your_save_prefix --model_name Carmon2019Unlabeled --generator_name Cifar10_Standard_Ding2020MMA_untarget --dataset cifar10
 
