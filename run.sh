@@ -37,7 +37,7 @@ python your_script.py --config config/train_untarget.json --surrogate_names Stan
 python attack.py --config config/attack_untarget.json --device cuda --save_prefix your_save_prefix --model_name Carmon2019Unlabeled --generator_name Cifar10_Standard_Ding2020MMA_untarget --dataset cifar10
 
 #DaST
-#move to DaST/
+#move to DaST/ and create an a folder that has same name as the value of --save_folder
 #train gan and substitute model
 python dast_cifar10.py --source_model Gowal2021Improving_28_10_ddpm_100m --model Carmon2019Unlabeled --workers 2 --batch_size 200 --niter 4 --lr 0.0001 --beta1 0.5 --alpha 0.2 --beta 0.1 --G_type 1 --save_folder saved_model
 #attack
