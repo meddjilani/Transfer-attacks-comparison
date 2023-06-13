@@ -95,7 +95,7 @@ def main():
     adv_root.mkdir(parents=True, exist_ok=True)
 
 
-    transform_test = transforms.Compose(BASES[
+    transform_test = transforms.Compose([
                     transforms.ToTensor(),
                     ])
 
