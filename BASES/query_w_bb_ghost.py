@@ -17,10 +17,16 @@ matplotlib.use('Agg')
 from tqdm import tqdm
 from utils_bases import load_model, get_adv_np, get_label_loss
 from robustbench.utils import load_model
-from utils.modelzoo_ghost.robustbench.robustbench.utils import load_model_ghost
 import torch, json, os
 from torchvision.datasets import CIFAR10
 import torchvision.transforms as transforms
+
+import sys
+module_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, module_directory)
+from utils.modelzoo_ghost.robustbench.robustbench.utils import load_model_ghost
+sys.path.remove(module_directory)
+
 from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
 
 def main():
@@ -39,9 +45,8 @@ def main():
     parser.add_argument("--loss_name", nargs="?", default='cw', help="the name of the loss")
     parser.add_argument("--x", type=int, default=3, help="times alpha by x")
     parser.add_argument("--lr", type=float, default=5e-3, help="learning rate of w")
-    parser.add_argument("--iterw", type=int, default=50, help="iterations of updating w")
+    parser.add_argument("--iterw", type=int, default=10, help="iterations of updating w")
     parser.add_argument("--n_im", type=int, default=10, help="number of images")
-    parser.add_argument('--batch_size', type=int, default=5)
     parser.add_argument("--untargeted", action='store_true', help="run untargeted attack")
     args = parser.parse_args()
 
@@ -102,7 +107,7 @@ def main():
                     ])
 
     testset = CIFAR10(root='../data', train = False, download = True, transform = transform_test)
-    testloader = torch.utils.data.DataLoader(testset, batch_size = args.batch_size, sampler=torch.utils.data.sampler.SubsetRandomSampler(range(args.n_im)), shuffle = False)
+    testloader = torch.utils.data.DataLoader(testset, batch_size = 1, sampler=torch.utils.data.sampler.SubsetRandomSampler(range(args.n_im)), shuffle = False)
 
     success_idx_list = set()
     success_idx_list_pretend = set() # untargeted success
