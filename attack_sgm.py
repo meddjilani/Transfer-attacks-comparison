@@ -11,7 +11,7 @@ import os, json
 from robustbench.data import load_cifar10
 from cifar10_models.resnet import resnet50
 
-from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
+from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT_BLACK
 from torch.utils.data import TensorDataset, DataLoader
 
 
@@ -48,7 +48,7 @@ if os.path.exists('config_ids_source_targets.json'):
 
 experiment = Experiment(
     api_key=COMET_APIKEY,
-    project_name=COMET_PROJECT,
+    project_name=COMET_PROJECT_BLACK,
     workspace=COMET_WORKSPACE,
 )
 
