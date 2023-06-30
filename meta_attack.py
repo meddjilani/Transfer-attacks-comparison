@@ -16,7 +16,7 @@ from meta_attack_cifar.attacks.generate_gradient import generate_gradient
 from meta_attack_cifar.load_attacked_and_meta_model import load_attacked_model, load_meta_model
 
 from meta_attack_cifar.options import args
-from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
+from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT_BLACK
 
 config = {}
 if os.path.exists('config_ids_source_targets.json'):
@@ -25,7 +25,7 @@ if os.path.exists('config_ids_source_targets.json'):
 
 experiment = Experiment(
     api_key=COMET_APIKEY,
-    project_name=COMET_PROJECT,
+    project_name=COMET_PROJECT_BLACK,
     workspace=COMET_WORKSPACE,
 )
 
@@ -42,8 +42,7 @@ def main( device):
     _, test_loader = load_data(args)
     assert test_loader is not None
     
-    model = load_attacked_model(args, 4, device)
-
+    model = load_attacked_model(args, 0, device)
 
     meta_model_path = args.load_ckpt
     assert os.path.exists(meta_model_path)

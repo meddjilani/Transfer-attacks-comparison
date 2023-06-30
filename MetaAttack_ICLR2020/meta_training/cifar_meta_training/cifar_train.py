@@ -40,6 +40,22 @@ def swapaxis(*input):
         each = each.transpose(0,1)
         result.append(each)
     return result
+
+def save_model(model, acc,target):
+    model_file_path = './checkpoint/meta'
+    if not os.path.exists(model_file_path):
+        os.makedirs(model_file_path)
+
+    file_name = str(acc) + 'cifar_' + MODELS[target] + '.pt'
+    save_model_path = os.path.join(model_file_path, file_name)
+    torch.save(model.state_dict(), save_model_path)
+
+def load_model(model, acc,target):
+    model_checkpoint_path = './checkpoint/meta/' + str(acc) + 'cifar_' + MODELS[target] + '.pt'
+    assert os.path.exists(model_checkpoint_path)
+    model.load_state_dict(torch.load(model_checkpoint_path))
+    return model
+
 def main():
     #print(args)
     TARGET_MODEL = 3
@@ -104,19 +120,7 @@ def main():
     test_step_number = len(mini_test)
     BEST_ACC = 1.5
     target_model = get_target_model(TARGET_MODEL).to(device)
-    def save_model(model, acc):
-        model_file_path = './checkpoint/meta'
-        if not os.path.exists(model_file_path):
-            os.makedirs(model_file_path)
-    
-        file_name = str(acc) + 'cifar_' + MODELS[TARGET_MODEL] + '.pt'
-        save_model_path = os.path.join(model_file_path, file_name)
-        torch.save(model.state_dict(), save_model_path)
-    def load_model(model,acc):
-        model_checkpoint_path = './checkpoint/meta/' + str(acc)+'cifar_' + MODELS[TARGET_MODEL] + '.pt'
-        assert os.path.exists(model_checkpoint_path)
-        model.load_state_dict(torch.load(model_checkpoint_path))        
-        return model
+
 
     for epoch in range(args.epoch//100):
         minis_iter = []
@@ -125,7 +129,7 @@ def main():
         mini_test_iter = iter(mini_test)
 
         if args.resume:
-            maml = load_model(maml, "0.74789804")
+            maml = load_model(maml, "0.74789804", TARGET_MODEL)
         for step in range(step_number):
             batch_data = []
             for each in minis_iter:
@@ -136,7 +140,7 @@ def main():
                 print('Training acc:', accs)
                 if accs[0] < BEST_ACC:
                     BEST_ACC = accs[0]
-                    save_model(maml, BEST_ACC)
+                    save_model(maml, BEST_ACC, TARGET_MODEL)
 
             if (epoch  + 1) % 15 == 0 and step ==0:  # evaluation
                 accs_all_test = []

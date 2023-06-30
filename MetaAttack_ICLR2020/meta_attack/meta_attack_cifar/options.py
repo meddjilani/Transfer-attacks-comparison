@@ -27,6 +27,7 @@ parser.add_argument("--max_fintune_iter", type = int, default = 63, help = "maxi
 
 parser.add_argument("--finetune_interval", type = int, default = 3, help = "iteration interval for finetuneing")
 
+parser.add_argument("--model", type = str, default = 'Carmon2019Unlabeled', help = 'the model selected to be used for meta-model')
 parser.add_argument("--target", type = str, default = 'Carmon2019Unlabeled', help = 'the model selected to be attaked')
 parser.add_argument('--learning_rate', default = 1e-2, type = float, help = 'learning rate')
 parser.add_argument('--update_pixels', default = 125, type = int, help = 'updated pixels every iteration')
@@ -35,7 +36,7 @@ parser.add_argument('--total_number', default = 1000, type = int, help = 'maxxim
 parser.add_argument("--untargeted", type = str, default = 'True')
 parser.add_argument("--istransfer", type = str, default = 'False')
 
-parser.add_argument("--load_ckpt", default = "../../checkpoints/meta_attacker/cifar/0.7234403cifar_VGG.pt", help = "path to meta attacker model")
+parser.add_argument("--load_ckpt", default = "./MetaAttack_ICLR2020/checkpoints/meta_attacker/cifar/0.7234403cifar_VGG.pt", help = "path to meta attacker model")
 
 
 
