@@ -150,8 +150,9 @@ def save_gradient(model, device, train_loader, model_name,save_path='./zoo_cw_gr
     loss_avg = 0
     
     process_data = dict()
-
+    nb_batches = len(train_loader)
     for batch_idx, (data, target) in enumerate(train_loader):
+        print(f"batch {batch_idx} over {nb_batches}")
         if n_batches>0 and batch_idx>=n_batches:
             break
         data, target = data.to(device), target.to(device)
@@ -187,3 +188,4 @@ def save_gradient(model, device, train_loader, model_name,save_path='./zoo_cw_gr
         
     save_file_path = save_path + '/' + model_name + '_{}.npy'.format(dataset)
     np.save(save_file_path, process_data)
+    print(f"gradients saved to {save_file_path}")
