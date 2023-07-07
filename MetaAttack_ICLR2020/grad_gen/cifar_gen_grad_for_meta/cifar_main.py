@@ -16,7 +16,7 @@ from robustbench.utils import load_model
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
-parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
+parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Gradient computation')
 parser.add_argument("--model", type = str, default = 'Carmon2019Unlabeled', help = 'the model selected to be used for meta-model')
 parser.add_argument("--dataset", choices=["mnist", "cifar10", "imagenet"], default = "cifar10")
 

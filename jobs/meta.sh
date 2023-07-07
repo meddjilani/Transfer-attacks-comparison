@@ -27,9 +27,19 @@ EPS=0.0313
 LR=0.01
 STEPS=10000
 
+# generating gradients for meta model training
+CUDA_VISIBLE_DEVICES=0 python cifar_main.py
+
+
+# training meta model
+cd "./MetaAttack_ICLR2020/meta_training/cifar_meta_training"
+CUDA_VISIBLE_DEVICES=0 python cifar_train.py
+
 TARGETS='Standard Andriushchenko2020Understanding Carmon2019Unlabeled Gowal2021Improving_28_10_ddpm_100m Chen2020Adversarial Engstrom2019Robustness Wong2020Fast Ding2020MMA Gowal2021Improving_70_16_ddpm_100m Rebuffi2021Fixing_28_10_cutmix_ddpm Rebuffi2021Fixing_70_16_cutmix_extra'
+
 
 for TARGET in $TARGETS
 do
+
  CUDA_VISIBLE_DEVICES=0 python meta_attack.py --target $TARGET --n_examples $N_EXAMPLES --eps $EPS --lr $LR --steps $STEPS --batch_size $BATCH_SIZE
 done
