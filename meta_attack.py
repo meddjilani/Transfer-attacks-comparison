@@ -7,7 +7,7 @@ import numpy as np
 import time, json
 import torch.optim as optim
 
-sys.path.append("./MetaAttack_ICLR2020./meta_attack/")
+sys.path.append("./MetaAttack_ICLR2020/meta_attack/")
 
 from meta_attack_cifar.attacks.cw_black import BlackBoxLInf
 from meta_attack_cifar.data import load_data

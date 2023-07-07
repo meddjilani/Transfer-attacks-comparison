@@ -16,6 +16,8 @@ np.random.seed(222)
 
 
 MODELS='Standard Andriushchenko2020Understanding Carmon2019Unlabeled Gowal2021Improving_28_10_ddpm_100m Chen2020Adversarial Engstrom2019Robustness Wong2020Fast Ding2020MMA Gowal2021Improving_70_16_ddpm_100m Rebuffi2021Fixing_28_10_cutmix_ddpm Rebuffi2021Fixing_70_16_cutmix_extra'.split(' ')
+ROBUST_PERF = [0, 43.93, 59.53, 63.38, 51.56, 49.25,43.21, 41.44, 66.10, 60.73, 66.58 ]
+MODELS_SORT = sorted(range(len(ROBUST_PERF)), key=ROBUST_PERF.__getitem__)
 
 def get_target_model(model_name, device="cuda"):
     net = load_model(model_name=model_name, dataset=args.dataset, threat_model='Linf', model_dir="../models")
@@ -77,10 +79,21 @@ def main(args):
 
     tmp = filter(lambda x: x.requires_grad, maml.parameters())
 
+    if args.meta_models =="top":
+        models = MODELS[MODELS_SORT[-args.task_num:]]
+
+    elif args.meta_models =="bottom":
+        models = MODELS[MODELS_SORT[:args.task_num]]
+        
+    elif args.meta_models =="medium":
+        nb_buckets = len(MODELS_SORT)//args.task_num
+        models = MODELS[(nb_buckets//2)*args.task_num:(nb_buckets//2)*(args.task_num+1)]
+    else:
+        models = MODELS[args.meta_models.split(";")]
     # initiate different datasets 
     minis = []
     for i in range(args.task_num):
-        path = osp.join("./zoo_cw_grad_cifar/train/", MODELS[i] + "_cifar.npy")
+        path = osp.join("./zoo_cw_grad_cifar/train/", models[i] + "_cifar.npy")
         mini = cifar(path, 
                     mode='train', 
                     n_way=args.n_way, 
@@ -157,6 +170,7 @@ if __name__ == '__main__':
     argparser.add_argument("--model", type=str, default='Carmon2019Unlabeled',
                         help='the model selected to be used for meta-model')
     argparser.add_argument("--dataset", choices=["mnist", "cifar10", "imagenet"], default="cifar10")
+    argparser.add_argument("--meta_models", choices=["top", "medium", "bottom"], default="medium")
 
     args = argparser.parse_args()
 
