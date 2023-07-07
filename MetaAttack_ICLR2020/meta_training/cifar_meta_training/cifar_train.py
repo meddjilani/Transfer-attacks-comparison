@@ -6,32 +6,20 @@ import torch, os
 import os.path as osp
 import numpy as np
 from cifar import cifar
-import scipy.stats
 from torch.utils.data import DataLoader
-from torch.optim import lr_scheduler
-import random, sys, pickle
 import argparse
-import sys 
-from models import *
 from meta import Meta
 
 torch.manual_seed(222)
 torch.cuda.manual_seed_all(222)
 np.random.seed(222)
 
-MODELS= ['VGG("VGG13")', 'VGG("VGG16")', 'GoogLeNet()', 'VGG("VGG11")', 'ResNet18()', 'MobileNetV2()', 'SENet18()', 'GoogLeNet()', 'PreActResNet18()', 'MobileNet()']
-cifar_grads = ["VGG13", "VGG16", "VGG19", "VGG11", "ResNet", "MobileNetV2", "SENet", "GoogLeNet", "PreActResNet", "MobileNet"]
 
-def get_target_model(index):
-    i = index
-    net = eval(MODELS[i])
-    if MODELS[i].startswith("VGG"):
-        model_checkpoint_path = './checkpoint/' + net.__class__.__name__ + MODELS[i][-4:-2] + '_ckpt.t7'
-    else:
-        model_checkpoint_path = './checkpoint/' + net.__class__.__name__ +'_ckpt.t7'
-    print('Loading checkpoint from %s' % model_checkpoint_path)
-    checkpoint = torch.load(model_checkpoint_path)
-    net.load_state_dict(checkpoint['net'])
+MODELS='Standard Andriushchenko2020Understanding Carmon2019Unlabeled Gowal2021Improving_28_10_ddpm_100m Chen2020Adversarial Engstrom2019Robustness Wong2020Fast Ding2020MMA Gowal2021Improving_70_16_ddpm_100m Rebuffi2021Fixing_28_10_cutmix_ddpm Rebuffi2021Fixing_70_16_cutmix_extra'.split(' ')
+
+def get_target_model(model_name, device="cuda"):
+    net = load_model(model_name=model_name, dataset=args.dataset, threat_model='Linf', model_dir="../models")
+    net = net.to(device)
     return net
 
 def swapaxis(*input):
@@ -56,9 +44,9 @@ def load_model(model, acc,target):
     model.load_state_dict(torch.load(model_checkpoint_path))
     return model
 
-def main():
+def main(args):
     #print(args)
-    TARGET_MODEL = 3
+    TARGET_MODEL = args.model
     config = [
         ('conv2d', [32, 3, 3, 3, 1, 1]),
         ('relu', [True]),
@@ -84,16 +72,15 @@ def main():
         ('convt2d', [32, 3, 3, 3, 1, 1]),
    ]
 
-    device = torch.device('cuda')
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
     maml = Meta(args, config).to(device)
 
     tmp = filter(lambda x: x.requires_grad, maml.parameters())
-    num = sum(map(lambda x: np.prod(x.shape), tmp))
-    
+
     # initiate different datasets 
     minis = []
     for i in range(args.task_num):
-        path = osp.join("./zoo_cw_grad_cifar/train/", cifar_grads[i] + "_cifar.npy")
+        path = osp.join("./zoo_cw_grad_cifar/train/", MODELS[i] + "_cifar.npy")
         mini = cifar(path, 
                     mode='train', 
                     n_way=args.n_way, 
@@ -104,7 +91,7 @@ def main():
         db = DataLoader(mini,args.batchsize, shuffle=True, num_workers=0, pin_memory=True)
         minis.append(db)
 
-    path_test = osp.join("./zoo_cw_grad_cifar/test/", cifar_grads[TARGET_MODEL] + "_cifar.npy")
+    path_test = osp.join("./zoo_cw_grad_cifar/test/", MODELS[TARGET_MODEL] + "_cifar.npy")
     mini_test = cifar(path_test, 
                     mode='test', 
                     n_way=1, 
@@ -117,9 +104,8 @@ def main():
     
     # start training
     step_number = len(minis[0])
-    test_step_number = len(mini_test)
     BEST_ACC = 1.5
-    target_model = get_target_model(TARGET_MODEL).to(device)
+    target_model = get_target_model(TARGET_MODEL, device)
 
 
     for epoch in range(args.epoch//100):
@@ -128,8 +114,6 @@ def main():
             minis_iter.append(iter(minis[i]))
         mini_test_iter = iter(mini_test)
 
-        if args.resume:
-            maml = load_model(maml, "0.74789804", TARGET_MODEL)
         for step in range(step_number):
             batch_data = []
             for each in minis_iter:
@@ -170,6 +154,10 @@ if __name__ == '__main__':
     argparser.add_argument('--meta_optim_choose', help='reptile or maml', default="reptile")
     argparser.add_argument('--resume', action = 'store_true',help='load model or not', default=False)
 
+    argparser.add_argument("--model", type=str, default='Carmon2019Unlabeled',
+                        help='the model selected to be used for meta-model')
+    argparser.add_argument("--dataset", choices=["mnist", "cifar10", "imagenet"], default="cifar10")
+
     args = argparser.parse_args()
 
-    main()
+    main(args)
