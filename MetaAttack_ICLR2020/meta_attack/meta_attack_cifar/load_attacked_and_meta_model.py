@@ -29,7 +29,7 @@ config = [
 MODELS= ['VGG("VGG13")','VGG("VGG16")','VGG("VGG19")','VGG("VGG11")', 'ResNet18()', 'MobileNetV2()', 'SENet18()', 'GoogLeNet()', 'PreActResNet18()', 'MobileNet()']
 def load_attacked_model(args, index, device):
 
-    net = load_model(model_name=args.target, dataset=args.dataset, threat_model='Linf') #print('Loading chec.....)
+    net = load_model(model_name=args.target, dataset=args.dataset, threat_model='Linf', model_dir="../models") #print('Loading chec.....)
     return net.to(device)
 
 class Meta(torch.nn.Module):
