@@ -22,9 +22,9 @@ class LGVModel(torch.nn.Module):
 
 
 
-def load_model_lgv(model_name, device, dataset='cifar10', threat_model='Linf', base_path="../models/lgv", batch_size=8,
+def load_model_lgv(model_name, device, dataset='cifar10', threat_model='Linf', base_path="../models", batch_size=8,
                    epochs=10, nb_models_epoch=4, lr=0.05):
-    base_model = load_model(model_name, dataset=dataset, threat_model=threat_model).to(device)
+    base_model = load_model(model_name, dataset=dataset, threat_model=threat_model, model_dir=base_path).to(device)
 
     transform_test = transforms.Compose([
         transforms.ToTensor(),
@@ -35,7 +35,7 @@ def load_model_lgv(model_name, device, dataset='cifar10', threat_model='Linf', b
 
     atk = LGV(base_model, train_loader, lr=lr, epochs=epochs, nb_models_epoch=nb_models_epoch, wd=1e-4, n_grad=1, attack_class=BIM, eps=4/255, alpha=4/255/10, steps=50, verbose=True)
 
-    models_path = os.path.join(base_path, model_name, dataset, threat_model)
+    models_path = os.path.join(base_path, "lgv",model_name, dataset, threat_model)
     if os.path.isdir(models_path):
         list_models = []
         files = [f for f in os.listdir(models_path) if os.path.isfile(os.path.join(models_path, f))]
@@ -46,6 +46,7 @@ def load_model_lgv(model_name, device, dataset='cifar10', threat_model='Linf', b
             list_models.append(model)
         atk.list_models = list_models
     else:
+        print("LGV models not found for {}. Collecting them!".format(models_path))
         atk.collect_models()
         atk.save_models(models_path)
 

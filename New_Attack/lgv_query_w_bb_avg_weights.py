@@ -80,17 +80,18 @@ def main():
     loss_name = args.loss_name
     lr_w = float(args.lr)
     device = f'cuda:{args.gpu}'
+    models_path = "../models"
 
     wb = []
     for model_name in surrogate_names:
         pretrained_model = load_model_lgv(model_name, device=device,dataset='cifar10', threat_model='Linf', epochs=args.lgv_epochs,
                                           nb_models_epoch=args.lgv_nb_models_epoch, lr=args.lgv_lr,
-                                          batch_size=args.lgv_batch_size)
+                                          batch_size=args.lgv_batch_size, base_path=models_path)
         pretrained_model.to(device)
         wb.append(pretrained_model)
 
     # load victim model
-    victim_model = load_model(args.model_name, dataset='cifar10', threat_model='Linf')
+    victim_model = load_model(args.model_name, dataset='cifar10', threat_model='Linf',model_dir=models_path)
     victim_model.to(device)
 
     transform_test = transforms.Compose([
