@@ -21,7 +21,9 @@ from utils.lgv import load_model_lgv
 # from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
 
 models1 = ['Jia2022LAS-AT_70_16','Gowal2020Uncovering_70_16','Debenedetti2022Light_XCiT-S12','Andriushchenko2020Understanding','Standard']
+models1 = ['Andriushchenko2020Understanding','Standard']
 models2 = ['Rebuffi2021Fixing_70_16_cutmix_extra','Huang2022Revisiting_WRN-A4','Pang2022Robustness_WRN70_16','Huang2021Exploring','Carmon2019Unlabeled']
+models2 = ['Pang2022Robustness_WRN70_16','Huang2021Exploring','Carmon2019Unlabeled']
 models = models1 + models2
 
 def normalize_list(arr):
@@ -88,11 +90,14 @@ def main():
 
     wb = []
     for model_name in surrogate_names:
-        pretrained_model = load_model_lgv(model_name, device=device,dataset='cifar10', threat_model='Linf', epochs=args.lgv_epochs,
-                                          nb_models_epoch=args.lgv_nb_models_epoch, lr=args.lgv_lr,
-                                          batch_size=args.lgv_batch_size, base_path=models_path)
-        pretrained_model.to(device)
-        wb.append(pretrained_model)
+        try:
+            pretrained_model = load_model_lgv(model_name, device=device,dataset='cifar10', threat_model='Linf', epochs=args.lgv_epochs,
+                                              nb_models_epoch=args.lgv_nb_models_epoch, lr=args.lgv_lr,
+                                              batch_size=args.lgv_batch_size, base_path=models_path)
+            pretrained_model.to(device)
+            wb.append(pretrained_model)
+        except Exception as e:
+            print(e)
 
     # load victim model
     victim_model = load_model(args.model_name, dataset='cifar10', threat_model='Linf',model_dir=models_path)
