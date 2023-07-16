@@ -5,8 +5,9 @@ from torchvision.datasets import CIFAR10
 import torchvision.transforms as transforms
 import torch
 
-class LGVModel(torch.Module):
+class LGVModel(torch.nn.Module):
     def __init__(self, device, base_model, lgv_models):
+        super(LGVModel, self).__init__()
         self.device = device
         self.base_model = base_model
         self.lgv_models = lgv_models
@@ -15,6 +16,7 @@ class LGVModel(torch.Module):
     def forward(self, input):
         self.last_model = self.lgv_models[self.counter%len(self.lgv_models)].to(self.device)
         self.counter+=1
+
 
         return self.last_model(input)
 
