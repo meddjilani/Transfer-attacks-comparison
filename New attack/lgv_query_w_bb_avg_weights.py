@@ -1,11 +1,3 @@
-"""
-This code is used for NeurIPS 2022 paper "Blackbox Attacks via Surrogate Ensemble Search"
-
-Attack blackbox victim model via querying weight space of ensemble models. 
-
-Blackbox setting
-"""
-
 import argparse
 
 import matplotlib
@@ -33,7 +25,7 @@ def normalize_list(arr):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="BASES attack")
+    parser = argparse.ArgumentParser(description="LGV + BASES attack")
 
     parser.add_argument('--model_name', default='Carmon2019Unlabeled', type=str, help='Target model to use.')
     parser.add_argument('--surrogate_names', nargs='+', default=['Standard', 'Ding2020MMA'],
