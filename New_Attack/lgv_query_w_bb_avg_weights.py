@@ -42,7 +42,7 @@ def main():
     parser.add_argument("--bound", default='linf', choices=['linf', 'l2'], help="bound in linf or l2 norm ball")
     parser.add_argument("--eps", type=float, default=8 / 255, help="perturbation bound: 10 for linf, 3128 for l2")
     parser.add_argument("--iters", type=int, default=10, help="number of inner iterations: 5,6,10,20...")
-    parser.add_argument("--gpu", type=int, default=1, help="GPU ID: 0,1")
+    parser.add_argument("--gpu", type=int, default=0, help="GPU ID: 0,1")
     parser.add_argument("--root", nargs="?", default='result', help="the folder name of result")
 
     parser.add_argument("--fuse", nargs="?", default='loss', help="the fuse method. loss or logit")
