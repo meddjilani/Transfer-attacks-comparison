@@ -1,6 +1,6 @@
 comet-ml
 git+https://github.com/RobustBench/robustbench.git@v1.0
-torchattacks
+torchattacks==3.4.0
 tqdm
 scipy>=1.4.1
 torch>=1.9.0

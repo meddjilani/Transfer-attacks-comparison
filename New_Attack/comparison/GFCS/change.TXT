@@ -1,0 +1,11 @@
+model_name
+surrogate_names and algo
+n_wb
+device
+testloader
+target_label
+change 1000 to 10
+change diff between adv and im in dist
+
+gfcs.utils
+change 1000 to 10
