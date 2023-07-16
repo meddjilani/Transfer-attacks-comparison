@@ -24,7 +24,7 @@ class LGVModel(torch.nn.Module):
 
 def load_model_lgv(model_name, device, dataset='cifar10', threat_model='Linf', base_path="../models/lgv", batch_size=8,
                    epochs=10, nb_models_epoch=4, lr=0.05):
-    base_model = load_model(model_name, dataset=dataset, threat_model=threat_model)
+    base_model = load_model(model_name, dataset=dataset, threat_model=threat_model).to(device)
 
     transform_test = transforms.Compose([
         transforms.ToTensor(),
