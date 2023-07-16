@@ -48,6 +48,7 @@ def load_model_lgv(model_name, device, dataset='cifar10', threat_model='Linf', b
     else:
         print("LGV models not found for {}. Collecting them!".format(models_path))
         atk.collect_models()
+        os.makedirs(models_path, exist_ok=True)
         atk.save_models(models_path)
 
     model = LGVModel(device=device, base_model=base_model,lgv_models=[copy.deepcopy(m.to("cpu")) for m in atk.list_models])
