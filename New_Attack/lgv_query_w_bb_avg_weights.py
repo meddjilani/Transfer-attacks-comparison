@@ -83,7 +83,7 @@ def main():
 
     wb = []
     for model_name in surrogate_names:
-        pretrained_model = load_model_lgv(model_name, dataset='cifar10', threat_model='Linf', epochs=args.lgv_epochs,
+        pretrained_model = load_model_lgv(model_name, device=device,dataset='cifar10', threat_model='Linf', epochs=args.lgv_epochs,
                                           nb_models_epoch=args.lgv_nb_models_epoch, lr=args.lgv_lr,
                                           batch_size=args.lgv_batch_size)
         pretrained_model.to(device)
