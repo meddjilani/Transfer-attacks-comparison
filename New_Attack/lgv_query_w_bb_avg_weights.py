@@ -31,7 +31,7 @@ def main():
     parser = argparse.ArgumentParser(description="LGV + BASES attack")
 
     parser.add_argument('--model_name', default='Carmon2019Unlabeled', type=str, help='Target model to use.')
-    parser.add_argument('--surrogate_names', nargs='+', default=['Rebuffi2021Fixing_70_16_cutmix_extra','Huang2022Revisiting_WRN-A4','Pang2022Robustness_WRN70_16','Huang2021Exploring','Carmon2019Unlabeled','Jia2022LAS-AT_70_16','Gowal2020Uncovering_70_16','Debenedetti2022Light_XCiT-S12','Andriushchenko2020Understanding','Standard'],
+    parser.add_argument('--surrogate_names', nargs='+', default=['Gowal2020Uncovering_70_16','Debenedetti2022Light_XCiT-S12','Andriushchenko2020Understanding','Standard','Rebuffi2021Fixing_70_16_cutmix_extra','Huang2022Revisiting_WRN-A4','Pang2022Robustness_WRN70_16','Huang2021Exploring','Carmon2019Unlabeled','Jia2022LAS-AT_70_16'],
                         help='Surrogate models to use.')
     parser.add_argument('--lgv_epochs', type=int, default=10)
     parser.add_argument('--lgv_nb_models_epoch', type=int, default=4)
@@ -42,7 +42,7 @@ def main():
     parser.add_argument("--bound", default='linf', choices=['linf', 'l2'], help="bound in linf or l2 norm ball")
     parser.add_argument("--eps", type=float, default=8 / 255, help="perturbation bound: 10 for linf, 3128 for l2")
     parser.add_argument("--iters", type=int, default=10, help="number of inner iterations: 5,6,10,20...")
-    parser.add_argument("--gpu", type=int, default=0, help="GPU ID: 0,1")
+    parser.add_argument("--gpu", type=int, default=1, help="GPU ID: 0,1")
     parser.add_argument("--root", nargs="?", default='result', help="the folder name of result")
 
     parser.add_argument("--fuse", nargs="?", default='loss', help="the fuse method. loss or logit")
