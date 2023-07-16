@@ -50,4 +50,6 @@ def load_model_lgv(model_name, device, dataset='cifar10', threat_model='Linf', b
         atk.collect_models()
         atk.save_models(models_path)
 
-    return LGVModel(device=device, base_model=base_model,lgv_models=atk.list_models)
+    model = LGVModel(device=device, base_model=base_model,lgv_models=[copy.deepcopy(m.to("cpu")) for m in atk.list_models])
+    del atk
+    return model

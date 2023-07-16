@@ -31,10 +31,10 @@ def main():
     parser = argparse.ArgumentParser(description="LGV + BASES attack")
 
     parser.add_argument('--model_name', default='Carmon2019Unlabeled', type=str, help='Target model to use.')
-    parser.add_argument('--surrogate_names', nargs='+', default=['Gowal2020Uncovering_70_16','Debenedetti2022Light_XCiT-S12','Andriushchenko2020Understanding','Standard','Rebuffi2021Fixing_70_16_cutmix_extra','Huang2022Revisiting_WRN-A4','Pang2022Robustness_WRN70_16','Huang2021Exploring','Carmon2019Unlabeled','Jia2022LAS-AT_70_16'],
+    parser.add_argument('--surrogate_names', nargs='+', default=['Rebuffi2021Fixing_70_16_cutmix_extra','Huang2022Revisiting_WRN-A4','Pang2022Robustness_WRN70_16','Huang2021Exploring','Carmon2019Unlabeled','Jia2022LAS-AT_70_16','Gowal2020Uncovering_70_16','Debenedetti2022Light_XCiT-S12','Andriushchenko2020Understanding','Standard'],
                         help='Surrogate models to use.')
     parser.add_argument('--lgv_epochs', type=int, default=10)
-    parser.add_argument('--lgv_nb_models_epoch', type=int, default=4)
+    parser.add_argument('--lgv_nb_models_epoch', type=int, default=2)
     parser.add_argument("--lgv_lr", type=float, default=0.05)
     parser.add_argument('--lgv_batch_size', type=int, default=32)
 
