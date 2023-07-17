@@ -39,7 +39,7 @@ def loss_cw(logits, tgt_label, margin=200, targeted=True):
     """
     device = logits.device
     k = torch.tensor(margin).float().to(device)
-    tgt_label = tgt_label.squeeze()
+    tgt_label = tgt_label
     logits = logits.squeeze()
     onehot_logits = torch.zeros_like(logits)
     onehot_logits[tgt_label] = logits[tgt_label]
