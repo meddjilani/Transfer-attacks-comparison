@@ -32,6 +32,10 @@ def normalize_list(arr):
     normalized_arr = (arr - min_val) / (max_val - min_val)
     return np.array(normalized_arr)
 
+def softmax(vector):
+    exp_vector = np.exp(vector)
+    normalized_vector = exp_vector / np.sum(exp_vector)
+    return normalized_vector
 
 def main():
     parser = argparse.ArgumentParser(description="LGV + BASES attack")
@@ -161,6 +165,7 @@ def main():
             while n_query < args.iterw:
                 w_np_temp_plus = w_np.copy()
                 w_np_temp_plus[idx_w] += lr_w
+                w_np_temp_plus = softmax(w_np_temp_plus)
                 adv_np_plus, losses_plus = get_adv_np(im_np, tgt_label, w_np_temp_plus, wb, bound, eps, n_iters, alpha,
                                                       fuse=fuse, untargeted=args.untargeted, loss_name=loss_name,
                                                       adv_init=adv_np)
@@ -188,6 +193,7 @@ def main():
 
                 w_np_temp_minus = w_np.copy()
                 w_np_temp_minus[idx_w] -= lr_w
+                w_np_temp_minus = softmax(w_np_temp_minus)
                 adv_np_minus, losses_minus = get_adv_np(im_np, tgt_label, w_np_temp_minus, wb, bound, eps, n_iters,
                                                         alpha, fuse=fuse, untargeted=args.untargeted,
                                                         loss_name=loss_name, adv_init=adv_np)
