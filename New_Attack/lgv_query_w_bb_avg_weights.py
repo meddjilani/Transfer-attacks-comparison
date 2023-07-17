@@ -26,12 +26,6 @@ models2 = ['Rebuffi2021Fixing_70_16_cutmix_extra','Huang2022Revisiting_WRN-A4','
 #models2 = ['Huang2022Revisiting_WRN-A4']
 models = models1 + models2
 
-def normalize_list(arr):
-    min_val = np.min(arr)
-    max_val = np.max(arr)
-    normalized_arr = (arr - min_val) / (max_val - min_val)
-    return np.array(normalized_arr)
-
 def softmax(vector):
     exp_vector = np.exp(vector)
     normalized_vector = exp_vector / np.sum(exp_vector)
@@ -243,7 +237,7 @@ def main():
                     print(f"lr_w: {lr_w} last_idx {last_idx}")
 
                 idx_w = (idx_w + 1) % n_wb
-                w_np = normalize_list(w_np)
+
 
                 if n_query >= args.iterw:
                     print('failed ', tgt_label.item(), ' ------> ', label_idx, ' n_query: ', n_query, ' \n')
