@@ -58,7 +58,7 @@ def main():
     parser.add_argument("--iterw", type=int, default=50, help="iterations of updating w")
     parser.add_argument("--theta", type=float, default=0.4, help="exploration rate")
     parser.add_argument("--n_im", type=int, default=500, help="number of images")
-    parser.add_argument("--untargeted", action='store_true', help="run untargeted attack")
+    parser.add_argument("--untargeted", type=int, default=1, help="run untargeted attack")
     args = parser.parse_args()
 
     config = {}
