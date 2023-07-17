@@ -97,6 +97,7 @@ def main():
             pretrained_model.to(device)
             wb.append(pretrained_model)
         except Exception as e:
+            print("Error loading model", model_name)
             print(e)
 
     # load victim model
