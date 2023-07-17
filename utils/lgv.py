@@ -10,17 +10,17 @@ class LGVModel(torch.nn.Module):
         super(LGVModel, self).__init__()
         self.device = device
         self.base_model = base_model
+        self.last_model = base_model
         self.lgv_models = lgv_models
         self.counter = 0
 
     def forward(self, input):
-        self.last_model = self.lgv_models[self.counter%len(self.lgv_models)].to(self.device)
-        self.counter+=1
-
-
         return self.last_model(input)
 
-
+    def next_variant(self):
+        self.last_model.to("cpu")
+        self.counter += 1
+        self.last_model = self.lgv_models[self.counter % len(self.lgv_models)].to(self.device)
 
 def load_model_lgv(model_name, device, dataset='cifar10', threat_model='Linf', base_path="../models", batch_size=8,
                    epochs=10, nb_models_epoch=4, lr=0.05):

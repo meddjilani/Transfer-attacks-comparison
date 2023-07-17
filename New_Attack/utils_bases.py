@@ -7,13 +7,12 @@ import torch
 import torchvision.models as models # version 0.12
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision import transforms
-
+from utils.lgv import LGVModel
 
 softmax = torch.nn.Softmax(dim=1)
 
 
-def get_logits_probs(im, model):
+def get_logits_probs(im, model, device=None):
     """Get the logits of a model given an image as input
     Args:
         im (PIL.Image or np.ndarray): uint8 image (read from PNG file), for 0-1 float image
@@ -22,7 +21,7 @@ def get_logits_probs(im, model):
         logits (numpy.ndarray): direct output of the model
         probs (numpy.ndarray): logits after softmax function
     """
-    device = next(model.parameters()).device
+    device = next(model.parameters()).device if device is None else device
     im_tensor = torch.from_numpy(im).unsqueeze(0).to(device) #.float().to(device) 
     logits = model(im_tensor)
     probs = softmax(logits)
@@ -39,7 +38,6 @@ def loss_cw(logits, tgt_label, margin=200, targeted=True):
     """
     device = logits.device
     k = torch.tensor(margin).float().to(device)
-    tgt_label = tgt_label
     logits = logits.squeeze()
     onehot_logits = torch.zeros_like(logits)
     onehot_logits[tgt_label] = logits[tgt_label]
@@ -90,7 +88,7 @@ def get_loss_fn(loss_name, targeted=True):
         return CW_loss(targeted)
 
 
-def get_label_loss(im, model, tgt_label, loss_name, targeted=True):
+def get_label_loss(im, model, tgt_label, loss_name, targeted=True, device="cpu"):
     """Get the loss
     Args:
         im (PIL.Image): uint8 image (read from PNG file)
@@ -98,9 +96,9 @@ def get_label_loss(im, model, tgt_label, loss_name, targeted=True):
         loss_name (str): 'cw', 'ce'
     """
     loss_fn = get_loss_fn(loss_name, targeted=targeted)
-    logits, _ = get_logits_probs(im, model)
+    logits, _ = get_logits_probs(im, model, device)
     pred_label = logits.argmax()
-    logits = torch.tensor(logits)
+    logits = torch.tensor(logits).to(device)
     #tgt_label = torch.tensor(tgt_label)
     loss = loss_fn(logits, tgt_label)
     # get top 5 labels
@@ -139,6 +137,7 @@ def get_adv(im, adv, target, w, pert_machine, bound, eps, n_iters, alpha, algo='
     for i in range(n_iters):
         adv.requires_grad=True
         input_tensor = adv
+        [model.next_variant() for model in pert_machine if isinstance(model, LGVModel)]
         outputs = [model(input_tensor) for model in pert_machine]
 
         if fuse == 'loss':
@@ -194,7 +193,7 @@ def get_adv_np(im_np, target_idx, w_np, pert_machine, bound, eps, n_iters, alpha
     Returns:
         adv_np (numpy.ndarray): adversarial output
     """
-    device = next(pert_machine[0].parameters()).device
+    device = pert_machine[0].device if hasattr(pert_machine[0], "device") else next(pert_machine[0].parameters()).device
     im = torch.from_numpy(im_np).unsqueeze(0).float().to(device)
 
     if adv_init is None:

@@ -94,7 +94,7 @@ def main():
             pretrained_model = load_model_lgv(model_name, device=device,dataset='cifar10', threat_model='Linf', epochs=args.lgv_epochs,
                                               nb_models_epoch=args.lgv_nb_models_epoch, lr=args.lgv_lr,
                                               batch_size=args.lgv_batch_size, base_path=models_path)
-            pretrained_model.to(device)
+            pretrained_model.last_model.to(device)
             wb.append(pretrained_model)
         except Exception as e:
             print("Error loading model", model_name)
@@ -137,7 +137,8 @@ def main():
             w_np = np.array(mean_weights(w_list))  # average weights of succeded examples
         adv_np, losses = get_adv_np(im_np, tgt_label, w_np, wb, bound, eps, n_iters, alpha, fuse=fuse,
                                     untargeted=args.untargeted, loss_name=loss_name, adv_init=None)
-        label_idx, loss, _ = get_label_loss(adv_np, victim_model, tgt_label, loss_name, targeted=not args.untargeted)
+        label_idx, loss, _ = get_label_loss(adv_np, victim_model, tgt_label, loss_name, targeted=not args.untargeted,
+                                            device=device)
         n_query = 1
         loss_wb_list = losses  # loss of optimizing wb models
         # print(f"{label_idx}, loss: {loss}") #imagenet_names[label_idx]
@@ -163,7 +164,7 @@ def main():
                                                       fuse=fuse, untargeted=args.untargeted, loss_name=loss_name,
                                                       adv_init=adv_np)
                 label_plus, loss_plus, _ = get_label_loss(adv_np_plus, victim_model, tgt_label, loss_name,
-                                                          targeted=not args.untargeted)
+                                                          targeted=not args.untargeted, device=device)
                 n_query += 1
                 # print(f"query: {n_query}, {idx_w} +, {label_plus}, loss: {loss_plus}") #, imagenet_names[label_plus]
 
@@ -190,7 +191,7 @@ def main():
                                                         alpha, fuse=fuse, untargeted=args.untargeted,
                                                         loss_name=loss_name, adv_init=adv_np)
                 label_minus, loss_minus, _ = get_label_loss(adv_np_minus, victim_model, tgt_label, loss_name,
-                                                            targeted=not args.untargeted)
+                                                            targeted=not args.untargeted, device=device)
                 n_query += 1
                 # print(f"query: {n_query}, {idx_w} -, {label_minus}, loss: {loss_minus}") #, imagenet_names[label_minus]
 
