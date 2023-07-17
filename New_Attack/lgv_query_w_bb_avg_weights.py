@@ -73,6 +73,7 @@ def main():
     )
 
     parameters = {'attack': 'QueryEnsemble', **vars(args), **config}
+    print("Running COMET experiment {} with parameters".format(experiment.get_name()), parameters)
     experiment.log_parameters(parameters)
 
     surrogate_names = args.surrogate_names
