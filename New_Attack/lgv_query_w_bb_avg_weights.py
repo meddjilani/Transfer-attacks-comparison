@@ -21,9 +21,9 @@ from utils.lgv import load_model_lgv
 # from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
 
 models1 = ['Jia2022LAS-AT_70_16','Gowal2020Uncovering_70_16','Debenedetti2022Light_XCiT-S12','Andriushchenko2020Understanding','Standard']
-models1 = ['Andriushchenko2020Understanding','Standard']
+models1 = ['Debenedetti2022Light_XCiT-S12']
 models2 = ['Rebuffi2021Fixing_70_16_cutmix_extra','Huang2022Revisiting_WRN-A4','Pang2022Robustness_WRN70_16','Huang2021Exploring','Carmon2019Unlabeled']
-models2 = ['Pang2022Robustness_WRN70_16','Huang2021Exploring','Carmon2019Unlabeled']
+models2 = ['Huang2022Revisiting_WRN-A4']
 models = models1 + models2
 
 def normalize_list(arr):
