@@ -1,9 +1,5 @@
 """
-This code is used for NeurIPS 2022 paper "Blackbox Attacks via Surrogate Ensemble Search"
-
-Attack blackbox victim model via querying weight space of ensemble models. 
-
-Blackbox setting
+baseline + update weights only if the target loss decreases + initialize the weight vector with the mean of the correctly classified images
 """
 
 from comet_ml import Experiment
