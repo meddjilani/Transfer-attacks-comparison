@@ -138,7 +138,7 @@ def main():
             query_list_pretend.append(n_query)
         if (not args.untargeted and label_idx == tgt_label) or (args.untargeted and label_idx != tgt_label):
             # originally successful
-            print('success', tgt_label.item(),' ------> ', label_idx,'\n')
+            print(f'success {tgt_label.item()} ------> {label_idx} with {n_query} queries')
             success_idx_list.add(im_idx)
             query_list.append(n_query)
         else: 
@@ -238,7 +238,7 @@ def main():
     print(f"avg queries: {np.mean(query_list)}")
 
     rob_acc = 1-(len(success_idx_list)/(im_idx+1))
-    metrics = {'robust_acc': rob_acc, 'Queries': np.mean(query_list)}
+    metrics = {'robust_acc': rob_acc, 'mean_queries': np.mean(query_list),'all_queries':query_list}
     experiment.log_metrics(metrics, step=1)
 
 
