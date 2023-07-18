@@ -23,17 +23,23 @@ import torchvision.transforms as transforms
 from utils.modelzoo_ghost.robustbench.robustbench.utils import load_model_ghost
 #from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
 
-def normalize_list(arr):
-    min_val = np.min(arr)
-    max_val = np.max(arr)
-    normalized_arr = (arr - min_val) / (max_val - min_val)
-    return np.array(normalized_arr)
+models1 = ['Jia2022LAS-AT_70_16','Gowal2020Uncovering_70_16','Debenedetti2022Light_XCiT-S12','Andriushchenko2020Understanding','Standard']
+#models1 = ['Debenedetti2022Light_XCiT-S12']
+models2 = ['Rebuffi2021Fixing_70_16_cutmix_extra','Huang2022Revisiting_WRN-A4','Pang2022Robustness_WRN70_16','Huang2021Exploring','Carmon2019Unlabeled']
+#models2 = ['Huang2022Revisiting_WRN-A4']
+models = models1 + models2
+
+def softmax(vector):
+    exp_vector = np.exp(vector)
+    normalized_vector = exp_vector / np.sum(exp_vector)
+    return normalized_vector
 
 def main():
-    parser = argparse.ArgumentParser(description="BASES attack")
+    parser = argparse.ArgumentParser(description="LGV + BASES attack")
 
     parser.add_argument('--model_name', default='Carmon2019Unlabeled', type=str, help='Target model to use.')
-    parser.add_argument('--surrogate_names',  nargs='+', default=['Standard','Ding2020MMA'], help='Surrogate models to use.')
+    parser.add_argument('--surrogate_names', nargs='+', default=models,
+                        help='Surrogate models to use.')
     parser.add_argument('--target_label',  type=int, default=2)
     parser.add_argument("--bound", default='linf', choices=['linf','l2'], help="bound in linf or l2 norm ball")
     parser.add_argument("--eps", type=int, default=8/255, help="perturbation bound: 10 for linf, 3128 for l2")
@@ -48,7 +54,7 @@ def main():
     parser.add_argument("--iterw", type=int, default=50, help="iterations of updating w")
     parser.add_argument("--theta", type=float, default=0.4, help="exploration rate")
     parser.add_argument("--n_im", type=int, default=10, help="number of images")
-    parser.add_argument("--untargeted", action='store_true', help="run untargeted attack")
+    parser.add_argument("--untargeted", type=int, default=1, help="run untargeted attack")
     args = parser.parse_args()
 
     config = {}
@@ -58,7 +64,7 @@ def main():
 
     experiment = Experiment(
         api_key="RDxdOE04VJ1EPRZK7oB9a32Gx",
-        project_name="Black-box attack comparison cifar10",
+        project_name="BASES_GHOST",
         workspace="meddjilani",
     )
 
@@ -142,6 +148,7 @@ def main():
             while n_query < args.iterw:
                 w_np_temp_plus = w_np.copy()
                 w_np_temp_plus[idx_w] += lr_w
+                w_np_temp_plus = softmax(w_np_temp_plus)
                 adv_np_plus, losses_plus = get_adv_np(im_np, tgt_label, w_np_temp_plus, wb, bound, eps, n_iters, alpha, fuse=fuse, untargeted=args.untargeted, loss_name=loss_name, adv_init=adv_np)
                 label_plus, loss_plus, _ = get_label_loss(adv_np_plus, victim_model, tgt_label, loss_name, targeted = not args.untargeted)
                 n_query += 1
@@ -166,6 +173,7 @@ def main():
 
                 w_np_temp_minus = w_np.copy()
                 w_np_temp_minus[idx_w] -= lr_w
+                w_np_temp_minus = softmax(w_np_temp_minus)
                 adv_np_minus, losses_minus = get_adv_np(im_np, tgt_label, w_np_temp_minus, wb, bound, eps, n_iters, alpha, fuse=fuse, untargeted=args.untargeted, loss_name=loss_name, adv_init=adv_np)
                 label_minus, loss_minus, _ = get_label_loss(adv_np_minus, victim_model, tgt_label, loss_name, targeted = not args.untargeted)
                 n_query += 1
@@ -212,7 +220,6 @@ def main():
                     print(f"lr_w: {lr_w} last_idx {last_idx}")
 
                 idx_w = (idx_w+1)% n_wb
-                w_np = normalize_list(w_np)
 
                 if n_query >= args.iterw:
                     print('failed ', tgt_label.item(),' ------> ', label_idx,' n_query: ',n_query,' \n')
