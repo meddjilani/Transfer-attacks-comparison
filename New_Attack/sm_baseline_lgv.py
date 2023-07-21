@@ -1,6 +1,8 @@
 """
 baseline + ghost networks in Perturbation Machine
 """
+import sys
+sys.path.append(".")
 
 from comet_ml import Experiment
 import argparse
