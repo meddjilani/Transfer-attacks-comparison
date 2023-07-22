@@ -1,9 +1,5 @@
 """
-This code is used for NeurIPS 2022 paper "Blackbox Attacks via Surrogate Ensemble Search"
-
-Attack blackbox victim model via querying weight space of ensemble models. 
-
-Blackbox setting
+baseline + learning rate time decay 
 """
 
 from comet_ml import Experiment
@@ -18,14 +14,20 @@ from tqdm import tqdm
 from utils_bases import get_adv_np, get_label_loss
 from robustbench.utils import load_model
 import torch, json, os
-import torch.nn as nn
 from torchvision.datasets import CIFAR10
 import torchvision.transforms as transforms
 #from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
 
+def softmax(vector):
+    exp_vector = np.exp(vector)
+    normalized_vector = exp_vector / np.sum(exp_vector)
+    return normalized_vector
+
 def main():
     parser = argparse.ArgumentParser(description="BASES attack")
+
     parser.add_argument('--model_name', default='Carmon2019Unlabeled', type=str, help='Target model to use.')
+    parser.add_argument('--surrogate_names',  nargs='+', default=['Standard','Ding2020MMA'], help='Surrogate models to use.')
     parser.add_argument('--target_label',  type=int, default=2)
     parser.add_argument("--bound", default='linf', choices=['linf','l2'], help="bound in linf or l2 norm ball")
     parser.add_argument("--eps", type=int, default=8/255, help="perturbation bound: 10 for linf, 3128 for l2")
@@ -38,8 +40,7 @@ def main():
     parser.add_argument("--x", type=int, default=3, help="times alpha by x")
     parser.add_argument("--lr", type=float, default=5e-3, help="learning rate of w")
     parser.add_argument("--iterw", type=int, default=50, help="iterations of updating w")
-    parser.add_argument("--theta", type=float, default=0.4, help="exploration rate")
-    parser.add_argument("--n_im", type=int, default=10, help="number of images")
+    parser.add_argument("--n_im", type=int, default=10000, help="number of images")
     parser.add_argument("--untargeted", action='store_true', help="run untargeted attack")
     args = parser.parse_args()
 
@@ -50,13 +51,15 @@ def main():
 
     experiment = Experiment(
         api_key="RDxdOE04VJ1EPRZK7oB9a32Gx",
-        project_name="Black-box attack comparison cifar10",
+        project_name="new-attack",
         workspace="meddjilani",
     )
 
     parameters = {'attack': 'QueryEnsemble', **vars(args), **config}
     experiment.log_parameters(parameters)
 
+    surrogate_names = args.surrogate_names
+    n_wb = len(surrogate_names)  
 
     bound = args.bound
     eps = args.eps
@@ -65,70 +68,20 @@ def main():
     fuse = args.fuse
     loss_name = args.loss_name
     lr_w = float(args.lr)
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    
+    device = f'cuda:{args.gpu}'
+    keys = [str(i) for i in range(args.n_im)]
 
-    #loading robust vanillas models
-    mean, std = [0.4914, 0.4822, 0.4465], [0.2023, 0.1994, 0.2010]
-    class Normalize(nn.Module):
-    
-        def __init__(self, mean, std):
-            super(Normalize, self).__init__()
-            self.mean = mean
-            self.std = std
-    
-        def forward(self, input):
-            size = input.size()
-            x = input.clone()
-            for i in range(size[1]):
-                x[:,i] = (x[:,i] - self.mean[i])/self.std[i]
-    
-            return x
-    
-    from cifar10_models.resnet import resnet34,resnet50
-    from cifar10_models.vgg import vgg13_bn, vgg16_bn, vgg19_bn
-    from cifar10_models.densenet import densenet121, densenet161, densenet169
+    wb = []
+    for model_name in surrogate_names:
+        pretrained_model = load_model(model_name, dataset='cifar10', threat_model='Linf')
+        pretrained_model.to(device)
+        wb.append(pretrained_model)
 
+    # load victim model
     victim_model = load_model(args.model_name, dataset='cifar10', threat_model='Linf')
     victim_model.to(device)
 
 
-    wb = []
-    pretrained_model = resnet34(pretrained=True)
-    pretrained_model.eval()
-    pretrained_model.to(device)
-    wb.append(pretrained_model)
-    pretrained_model = resnet50(pretrained=True)
-    pretrained_model.eval()
-    pretrained_model.to(device)
-    wb.append(pretrained_model)
-    pretrained_model = vgg13_bn(pretrained=True)
-    pretrained_model.eval()
-    pretrained_model.to(device)
-    wb.append(pretrained_model)
-    pretrained_model = vgg16_bn(pretrained=True)
-    pretrained_model.eval()
-    pretrained_model.to(device)
-    wb.append(pretrained_model)
-    pretrained_model = vgg19_bn(pretrained=True)
-    pretrained_model.eval()
-    pretrained_model.to(device)
-    wb.append(pretrained_model)
-    pretrained_model = densenet121(pretrained=True)
-    pretrained_model.eval()
-    pretrained_model.to(device)
-    wb.append(pretrained_model)
-    pretrained_model = densenet161(pretrained=True)
-    pretrained_model.eval()
-    pretrained_model.to(device)
-    wb.append(pretrained_model)
-    pretrained_model = densenet169(pretrained=True)
-    pretrained_model.eval()
-    pretrained_model.to(device)
-    wb.append(pretrained_model)
-
-    n_wb = len(wb)
-    
     transform_test = transforms.Compose([
                     transforms.ToTensor(),
                     ])
@@ -138,14 +91,22 @@ def main():
 
     success_idx_list = set()
     success_idx_list_pretend = set() # untargeted success
+    correct_pred = 0
+    suc_adv = 0
     query_list = []
     query_list_pretend = []
     mean_weights = lambda tab: [sum(col) / len(tab) for col in zip(*tab)] if len(tab) > 0 else []
     w_list = []
     for im_idx,(image,label) in tqdm(enumerate(testloader)):
+        loss_target = []
         print(f"im_idx: {im_idx + 1}")
         image, label = image.to(device), label.to(device)
-        lr_w = float(args.lr) # re-initialize
+        with torch.no_grad():
+            pred_vic = torch.argmax(victim_model(image)).item()
+        if label.item() == pred_vic:
+            correct_pred +=1
+        lr_w = float(args.lr) 
+        k = 0.00001
         image = torch.squeeze(image)
         im_np = np.array(image.cpu())
         print('image mean, 1st value: ',im_np.mean(),', ',np.ravel(im_np)[0])
@@ -155,16 +116,11 @@ def main():
             tgt_label = gt_label
 
         # start from equal weights
-        if im_idx==0 or len(w_list)==0:
-            w_np = np.array([1 for _ in range(len(wb))]) / len(wb)
-        else:
-            w_np = np.array(mean_weights(w_list)) # average weights of succeded examples
+        w_np = np.array([1 for _ in range(len(wb))]) / len(wb)
         adv_np, losses = get_adv_np(im_np, tgt_label, w_np, wb, bound, eps, n_iters, alpha, fuse=fuse, untargeted=args.untargeted, loss_name=loss_name, adv_init=None)
         label_idx, loss, _ = get_label_loss(adv_np, victim_model, tgt_label, loss_name, targeted = not args.untargeted)
         n_query = 1
-        loss_wb_list = losses   # loss of optimizing wb models
-        #print(f"{label_idx}, loss: {loss}") #imagenet_names[label_idx]
-        #print(f"w: {w_np.tolist()}")
+        loss_target.append(loss)
 
         # pretend
         if not args.untargeted and label_idx != gt_label:
@@ -175,17 +131,20 @@ def main():
             print('success', tgt_label.item(),' ------> ', label_idx,'\n')
             success_idx_list.add(im_idx)
             query_list.append(n_query)
+            if label.item() == pred_vic:
+                suc_adv +=1
+                
         else: 
             idx_w = 0         # idx of wb in W
             last_idx = -1    # if no changes after one round, reduce the learning rate
-            
+            t = 0
             while n_query < args.iterw:
                 w_np_temp_plus = w_np.copy()
                 w_np_temp_plus[idx_w] += lr_w
+                w_np_temp_plus = softmax(w_np_temp_plus)
                 adv_np_plus, losses_plus = get_adv_np(im_np, tgt_label, w_np_temp_plus, wb, bound, eps, n_iters, alpha, fuse=fuse, untargeted=args.untargeted, loss_name=loss_name, adv_init=adv_np)
                 label_plus, loss_plus, _ = get_label_loss(adv_np_plus, victim_model, tgt_label, loss_name, targeted = not args.untargeted)
                 n_query += 1
-                #print(f"query: {n_query}, {idx_w} +, {label_plus}, loss: {loss_plus}") #, imagenet_names[label_plus]
                 
                 # pretend
                 if (not args.untargeted and label_plus != gt_label) and (im_idx not in success_idx_list_pretend):
@@ -200,16 +159,18 @@ def main():
                     loss = loss_plus
                     w_np = w_np_temp_plus
                     adv_np = adv_np_plus
-                    loss_wb_list += losses_plus
                     w_list.append(w_np.tolist())
+                    if label.item() == pred_vic:
+                        suc_adv +=1
+                    loss_target.append(loss_plus)
                     break
 
                 w_np_temp_minus = w_np.copy()
                 w_np_temp_minus[idx_w] -= lr_w
+                w_np_temp_minus = softmax(w_np_temp_minus)
                 adv_np_minus, losses_minus = get_adv_np(im_np, tgt_label, w_np_temp_minus, wb, bound, eps, n_iters, alpha, fuse=fuse, untargeted=args.untargeted, loss_name=loss_name, adv_init=adv_np)
                 label_minus, loss_minus, _ = get_label_loss(adv_np_minus, victim_model, tgt_label, loss_name, targeted = not args.untargeted)
                 n_query += 1
-                #print(f"query: {n_query}, {idx_w} -, {label_minus}, loss: {loss_minus}") #, imagenet_names[label_minus]
 
                 # pretend
                 if (not args.untargeted and label_minus != gt_label) and (im_idx not in success_idx_list_pretend):
@@ -224,37 +185,42 @@ def main():
                     loss = loss_minus
                     w_np = w_np_temp_minus
                     adv_np = adv_np_minus
-                    loss_wb_list += losses_minus
                     w_list.append(w_np.tolist())
+                    if label.item() == pred_vic:
+                        suc_adv +=1
+                    loss_target.append(loss_minus)
                     break
 
-                # update
-                if loss_plus < loss or loss_minus < loss:
-                    if loss_plus < loss_minus:
-                        loss = loss_plus
-                        w_np = w_np_temp_plus
-                        adv_np = adv_np_plus
-                        loss_wb_list += losses_plus
-                        print(n_query,' w',idx_w,' + , loss=', loss.item())
-                    else:
-                        loss = loss_minus
-                        w_np = w_np_temp_minus
-                        adv_np = adv_np_minus
-                        loss_wb_list += losses_minus
-                        print(n_query,' w',idx_w,' - , loss=', loss.item())
-                    last_idx = idx_w
-                elif last_idx == idx_w: 
-                    if np.random.random() < args.theta and lr_w < 0.5:
-                        w_np += np.random.normal(0, 1, w_np.shape)
-                        lr_w *= 1/0.75 # increase exploration
-                    else:
-                        lr_w = lr_w * 0.75 # increase exploitation
-                    print(f"lr_w: {lr_w} last_idx {last_idx}")
+
+                if loss_plus < loss_minus:
+                    loss = loss_plus
+                    w_np = w_np_temp_plus
+                    adv_np = adv_np_plus
+                    print(n_query,' w',idx_w,' + , loss=', loss.item())
+                else:
+                    loss = loss_minus
+                    w_np = w_np_temp_minus
+                    adv_np = adv_np_minus
+                    print(n_query,' w',idx_w,' - , loss=', loss.item())
+                last_idx = idx_w
+                loss_target.append(loss)
 
                 idx_w = (idx_w+1)% n_wb
 
+                lr_w = lr_w/(1+k*t)
+                t+=1
+                
                 if n_query >= args.iterw:
                     print('failed ', tgt_label.item(),' ------> ', label_idx,' n_query: ',n_query,' \n')
+                    query_list.append(n_query)
+
+        rob_acc = 1-(len(success_idx_list)/(im_idx+1))
+        suc_rate = 0 if correct_pred==0 else suc_adv / correct_pred
+        w_dict = dict(zip(keys, w_np.tolist()))
+        metrics = {'robust_acc': rob_acc, 'suc_rate' : suc_rate, 'target_correct_pred': correct_pred, 'n_query': n_query, 'minloss':loss_target[-1], 'maxloss':max(loss_target), 'meanloss':sum(loss_target) / len(loss_target)}
+        metrics.update(w_dict)
+        experiment.log_metrics(metrics, step=im_idx+1)
+
     print('average weights ',w_list)
     if (args.untargeted):
         print(f"untargeted. total_success: {len(success_idx_list)}; success_rate: {len(success_idx_list)/(im_idx+1)}, avg queries: {np.mean(query_list)}")
@@ -267,12 +233,6 @@ def main():
     
     print(f"query_list: {query_list}")
     print(f"avg queries: {np.mean(query_list)}")
-
-    rob_acc = 1-(len(success_idx_list)/(im_idx+1))
-    metrics = {'robust_acc': rob_acc, 'Queries': np.mean(query_list)}
-    experiment.log_metrics(metrics, step=1)
-
-
 
 
 if __name__ == '__main__':
