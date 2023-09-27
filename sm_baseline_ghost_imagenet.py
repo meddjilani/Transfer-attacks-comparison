@@ -91,6 +91,7 @@ def main():
     wb = []
     for surrogate_model in surrogate_names:
         source_model = getattr(models, surrogate_model)(pretrained=True)
+        torch.save(source_model.state_dict(), str(surrogate_model)+'_imagenet.pt')
         source_model = nn.Sequential(
             Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
             source_model
