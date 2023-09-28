@@ -28,6 +28,7 @@ from cifar10_models.mobilenetv2 import mobilenet_v2
 
 from Normalize import Normalize
 from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
+import random
 
 
 def softmax(vector):
@@ -97,17 +98,17 @@ def main():
         elif surrogate_model =='vgg11':
             source_model = vgg11_bn(pretrained=True)
         elif surrogate_model =='resnet18':
-            source_model = resnet18_gn(pretrained=True)
+            source_model = resnet18(pretrained=True)
         elif surrogate_model =='resnet34':
-            source_model = resnet34_gn(pretrained=True)
+            source_model = resnet34(pretrained=True)
         elif surrogate_model =='resnet50':
-            source_model = resnet50_gn(pretrained=True)
+            source_model = resnet50(pretrained=True)
         elif surrogate_model =='densenet121':
-            source_model = densenet121_gn(pretrained=True)
+            source_model = densenet121(pretrained=True)
         elif surrogate_model =='densenet161':
-            source_model = densenet161_gn(pretrained=True)
+            source_model = densenet161(pretrained=True)
         elif surrogate_model =='densenet169':
-            source_model = densenet169_gn(pretrained=True)
+            source_model = densenet169(pretrained=True)
         elif surrogate_model =='googlenet':
             source_model = googlenet(pretrained=True)
         elif surrogate_model =='mobilenet':
@@ -202,10 +203,14 @@ def main():
         image = torch.squeeze(image)
         im_np = np.array(image.cpu())
         print('image mean, 1st value: ',im_np.mean(),', ',np.ravel(im_np)[0])
-        gt_label = label
-        tgt_label = args.target_label
+        gt_label = label.item()
+        tgts_label = list(range(10))
+        tgts_label.remove(gt_label)
+        tgt_label = random.choice(tgts_label)
         if args.untargeted:
-            tgt_label = gt_label.item()
+            tgt_label = gt_label
+        else:
+            print("tgt_label:",tgt_label)
 
         # start from equal weights
         w_np = np.array([1 for _ in range(len(wb))]) / len(wb)
@@ -220,7 +225,7 @@ def main():
             query_list_pretend.append(n_query)
         if (not args.untargeted and label_idx == tgt_label) or (args.untargeted and label_idx != tgt_label):
             # originally successful
-            print('success', tgt_label,' ------> ', label_idx,'\n')
+            print('success', gt_label,' ------> ', label_idx,'\n')
             success_idx_list.add(im_idx)
             query_list.append(n_query)
             if label.item() == pred_vic:
@@ -245,7 +250,7 @@ def main():
 
                 # stop if successful
                 if (not args.untargeted)*(tgt_label == label_plus) or args.untargeted*(tgt_label != label_plus):
-                    print('success+', tgt_label,' ------> ', label_plus,'\n')
+                    print('success+', gt_label,' ------> ', label_plus,'\n')
                     success_idx_list.add(im_idx)
                     query_list.append(n_query)
                     loss = loss_plus
@@ -271,7 +276,7 @@ def main():
 
                 # stop if successful
                 if (not args.untargeted)*(tgt_label == label_minus) or args.untargeted*(tgt_label != label_minus):
-                    print('success-', tgt_label,' ------> ', label_minus,'\n')
+                    print('success-', gt_label,' ------> ', label_minus,'\n')
                     success_idx_list.add(im_idx)
                     query_list.append(n_query)
                     loss = loss_minus
@@ -305,7 +310,7 @@ def main():
                     print(f"lr_w: {lr_w}")
                 
                 if n_query >= args.iterw:
-                    print('failed ', tgt_label,' ------> ', label_idx,' n_query: ',n_query,' \n')
+                    print('failed ', gt_label,' ------> ', label_idx,' n_query: ',n_query,' \n')
                     query_list.append(n_query)
 
         rob_acc = 1-(len(success_idx_list)/(im_idx+1))

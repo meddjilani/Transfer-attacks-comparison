@@ -31,6 +31,7 @@ from cifar10_models.densenet_ghost import densenet161 as densenet161_gn, densene
 
 from Normalize import Normalize
 from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
+import random
 
 
 def softmax(vector):
@@ -43,7 +44,7 @@ def main():
 
     parser.add_argument('--target', default='Carmon2019Unlabeled', type=str, help='Target model to use.')
     parser.add_argument('--surrogate_names',  nargs='+', default=['Standard','Ding2020MMA'], help='Surrogate models to use.')
-    parser.add_argument('--target_label',  type=int, default=2)
+    # parser.add_argument('--target_label',  type=int, default=2)
     parser.add_argument("--bound", default='linf', choices=['linf','l2'], help="bound in linf or l2 norm ball")
     parser.add_argument("--eps", type=int, default=8/255, help="perturbation bound: 10 for linf, 3128 for l2")
     parser.add_argument("--iters", type=int, default=10, help="number of inner iterations: 5,6,10,20...")
@@ -184,6 +185,12 @@ def main():
                     ])
 
     testset = CIFAR10(root='/data', train = False, download = True, transform = transform_test)
+    # if not args.untargeted:
+    #     print('Targeted attack : Removing Label ', args.target_label,' images from Cifar10 test dataset')
+    #     indices = [i for i in range(len(testset)) if testset[i][1] != args.target_label]
+    #     selected_indices = indices[:args.n_im]
+    # else:
+    #     selected_indices = range(args.n_im)
     testloader = torch.utils.data.DataLoader( torch.utils.data.Subset(testset, range(args.n_im)), batch_size=1, shuffle = False) #sampler=torch.utils.data.sampler.SubsetRandomSampler(range(args.n_im))
 
     success_idx_list = set()
@@ -206,10 +213,14 @@ def main():
         image = torch.squeeze(image)
         im_np = np.array(image.cpu())
         print('image mean, 1st value: ',im_np.mean(),', ',np.ravel(im_np)[0])
-        gt_label = label
-        tgt_label = args.target_label
+        gt_label = label.item()
+        tgts_label = list(range(10))
+        tgts_label.remove(gt_label)
+        tgt_label = random.choice(tgts_label)
         if args.untargeted:
-            tgt_label = gt_label.item()
+            tgt_label = gt_label
+        else:
+            print("tgt_label:",tgt_label)
 
         # start from equal weights
         w_np = np.array([1 for _ in range(len(wb))]) / len(wb)
@@ -224,7 +235,7 @@ def main():
             query_list_pretend.append(n_query)
         if (not args.untargeted and label_idx == tgt_label) or (args.untargeted and label_idx != tgt_label):
             # originally successful
-            print('success', tgt_label,' ------> ', label_idx,'\n')
+            print('success', gt_label,' ------> ', label_idx,'\n')
             success_idx_list.add(im_idx)
             query_list.append(n_query)
             if label.item() == pred_vic:
@@ -249,7 +260,7 @@ def main():
 
                 # stop if successful
                 if (not args.untargeted)*(tgt_label == label_plus) or args.untargeted*(tgt_label != label_plus):
-                    print('success+', tgt_label,' ------> ', label_plus,'\n')
+                    print('success+', gt_label,' ------> ', label_plus,'\n')
                     success_idx_list.add(im_idx)
                     query_list.append(n_query)
                     loss = loss_plus
@@ -275,7 +286,7 @@ def main():
 
                 # stop if successful
                 if (not args.untargeted)*(tgt_label == label_minus) or args.untargeted*(tgt_label != label_minus):
-                    print('success-', tgt_label,' ------> ', label_minus,'\n')
+                    print('success-', gt_label,' ------> ', label_minus,'\n')
                     success_idx_list.add(im_idx)
                     query_list.append(n_query)
                     loss = loss_minus
@@ -309,7 +320,7 @@ def main():
                     print(f"lr_w: {lr_w}")
                 
                 if n_query >= args.iterw:
-                    print('failed ', tgt_label,' ------> ', label_idx,' n_query: ',n_query,' \n')
+                    print('failed ', gt_label,' ------> ', label_idx,' n_query: ',n_query,' \n')
                     query_list.append(n_query)
 
         rob_acc = 1-(len(success_idx_list)/(im_idx+1))
