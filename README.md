@@ -1,7 +1,7 @@
 # Transfer-attacks-comparison
 Comparing State of the art black-box attacks methods such as MI, DI, Admix, Ghost networks by attacking some robust models trained on cifar10 that are available in the robustbench leaderboad.
 
-## Reproducing the results
+## Reproducing the results of SOTA
 Download pretrained models on cifar-10 from : https://github.com/huyvnphan/PyTorch_CIFAR10.git 
 - Run the following command to get correctly classified images by all sources and targets models
 ```bash
