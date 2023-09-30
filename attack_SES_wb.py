@@ -223,7 +223,7 @@ def main():
             print("tgt_label:",tgt_label)
 
         # weight balancing
-        losses_w_b = ebad_surr_losses(im_np, tgt_label, wb, untargeted=args.untargeted, loss_name=loss_name)
+        losses_w_b = ebad_surr_losses(im_np, tgt_label, wb, untargeted=args.untargeted, loss_name='ce')
         losses_w_b_np = np.array(losses_w_b)
         w_inv = 1 / losses_w_b_np
         w_np = w_inv / w_inv.sum()
