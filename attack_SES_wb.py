@@ -53,8 +53,11 @@ def main():
     
     parser.add_argument("--fuse", nargs="?", default='loss', help="the fuse method. loss or logit")
     parser.add_argument("--loss_name", nargs="?", default='cw', help="the name of the loss")
+    parser.add_argument("--algo", default='mim', help="the algo used inside the perturbation machine")
     parser.add_argument("--x", type=int, default=3, help="times alpha by x")
     parser.add_argument("--lr", type=float, default=0.5, help="learning rate of w")
+    parser.add_argument("--resize_rate", type=float, default=0.9, help="resize factor used in input diversity")
+    parser.add_argument("--diversity_prob", type=float, default=0.5, help="the probability of applying input diversity")
     parser.add_argument("--iterw", type=int, default=50, help="iterations of updating w")
     parser.add_argument("--n_im", type=int, default=10000, help="number of images")
     parser.add_argument("--untargeted", action='store_true', help="run untargeted attack")
@@ -76,10 +79,13 @@ def main():
     experiment.log_parameters(parameters)
 
 
+    algo = args.algo
     bound = args.bound
     eps = args.eps
     n_iters = args.iters
     alpha = args.x * eps / n_iters # step-size
+    resize_rate = args.resize_rate
+    diversity_prob = args.diversity_prob
     fuse = args.fuse
     loss_name = args.loss_name
     lr_w = float(args.lr)
@@ -223,14 +229,19 @@ def main():
             print("tgt_label:",tgt_label)
 
         # weight balancing
-        losses_w_b = ebad_surr_losses(im_np, tgt_label, wb, untargeted=args.untargeted, loss_name='ce')
+        losses_w_b = ebad_surr_losses(im_np, tgt_label, wb)
         losses_w_b_np = np.array(losses_w_b)
-        w_inv = 1 / losses_w_b_np
-        w_np = w_inv / w_inv.sum()
-        print(losses_w_b_np, w_np)
+        if args.untargeted:
+            w_inv = losses_w_b_np
+            w_np = w_inv / w_inv.sum()
+            print(losses_w_b_np, w_np)            
+        else:
+            w_inv = 1 / losses_w_b_np
+            w_np = w_inv / w_inv.sum()
+            print(losses_w_b_np, w_np)
 
 
-        adv_np, losses = get_adv_np(im_np, tgt_label, w_np, wb, bound, eps, n_iters, alpha, fuse=fuse, untargeted=args.untargeted, loss_name=loss_name, adv_init=None)
+        adv_np, losses = get_adv_np(im_np, tgt_label, w_np, wb, bound, eps, n_iters, alpha, resize_rate, diversity_prob, algo = algo, fuse=fuse, untargeted=args.untargeted, loss_name=loss_name, adv_init=None)
         label_idx, loss, _ = get_label_loss(adv_np, victim_model, tgt_label, loss_name, targeted = not args.untargeted, device=device)
         n_query = 1
         loss_target.append(loss)
@@ -255,7 +266,7 @@ def main():
                 w_np_temp_plus = w_np.copy()
                 w_np_temp_plus[idx_w] += lr_w * w_inv[idx_w]
                 w_np_temp_plus = softmax(w_np_temp_plus)
-                adv_np_plus, losses_plus = get_adv_np(im_np, tgt_label, w_np_temp_plus, wb, bound, eps, n_iters, alpha, fuse=fuse, untargeted=args.untargeted, loss_name=loss_name, adv_init=None)
+                adv_np_plus, losses_plus = get_adv_np(im_np, tgt_label, w_np_temp_plus, wb, bound, eps, n_iters, alpha, resize_rate, diversity_prob, algo = algo, fuse=fuse, untargeted=args.untargeted, loss_name=loss_name, adv_init=None)
                 label_plus, loss_plus, _ = get_label_loss(adv_np_plus, victim_model, tgt_label, loss_name, targeted = not args.untargeted, device=device)
                 n_query += 1
                 
@@ -281,7 +292,7 @@ def main():
                 w_np_temp_minus = w_np.copy()
                 w_np_temp_minus[idx_w] -= lr_w * w_inv[idx_w]
                 w_np_temp_minus = softmax(w_np_temp_minus)
-                adv_np_minus, losses_minus = get_adv_np(im_np, tgt_label, w_np_temp_minus, wb, bound, eps, n_iters, alpha, fuse=fuse, untargeted=args.untargeted, loss_name=loss_name, adv_init=None)
+                adv_np_minus, losses_minus = get_adv_np(im_np, tgt_label, w_np_temp_minus, wb, bound, eps, n_iters, alpha, resize_rate, diversity_prob, algo = algo, fuse=fuse, untargeted=args.untargeted, loss_name=loss_name, adv_init=None)
                 label_minus, loss_minus, _ = get_label_loss(adv_np_minus, victim_model, tgt_label, loss_name, targeted = not args.untargeted, device=device)
                 n_query += 1
 
