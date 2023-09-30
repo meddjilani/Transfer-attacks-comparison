@@ -214,11 +214,16 @@ def main():
             print("tgt_label:",tgt_label)
 
         # weight balancing
-        losses_w_b = ebad_surr_losses(im_np, tgt_label, wb, untargeted=args.untargeted, loss_name=loss_name)
+        losses_w_b = ebad_surr_losses(im_np, tgt_label, wb)
         losses_w_b_np = np.array(losses_w_b)
-        w_inv = 1 / losses_w_b_np
-        w_np = w_inv / w_inv.sum()
-        print(losses_w_b_np, w_np)
+        if args.untargeted:
+            w_inv = losses_w_b_np
+            w_np = w_inv / w_inv.sum()
+            print(losses_w_b_np, w_np)            
+        else:
+            w_inv = 1 / losses_w_b_np
+            w_np = w_inv / w_inv.sum()
+            print(losses_w_b_np, w_np)
 
 
         adv_np, losses = get_adv_np(im_np, tgt_label, w_np, wb, bound, eps, n_iters, alpha, resize_rate, diversity_prob, fuse=fuse, untargeted=args.untargeted, loss_name=loss_name, adv_init=None)
