@@ -65,7 +65,7 @@ def main():
         project_name=COMET_PROJECT,
         workspace=COMET_WORKSPACE,
     )
-    experiment.set_name("sm_baseline_"+"_".join(args.surrogate_names)+"_"+args.target) 
+    experiment.set_name("BASES_"+"_".join(args.surrogate_names)+"_"+args.target) 
 
     parameters = {'attack': 'QueryEnsemble', **vars(args), **config}
     experiment.log_parameters(parameters)

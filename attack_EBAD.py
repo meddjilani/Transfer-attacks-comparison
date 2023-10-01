@@ -32,7 +32,7 @@ import random
 
 
 def main():
-    parser = argparse.ArgumentParser(description="BASES attack")
+    parser = argparse.ArgumentParser(description="EBAD attack")
 
     parser.add_argument('--target', default='Carmon2019Unlabeled', type=str, help='Target model to use.')
     parser.add_argument('--surrogate_names',  nargs='+', default=['Standard','Ding2020MMA'], help='Surrogate models to use.')
@@ -65,7 +65,7 @@ def main():
         project_name=COMET_PROJECT,
         workspace=COMET_WORKSPACE,
     )
-    experiment.set_name("sm_baseline_"+"_".join(args.surrogate_names)+"_"+args.target) 
+    experiment.set_name("EBAD_"+"_".join(args.surrogate_names)+"_"+args.target) 
 
     parameters = {'attack': 'QueryEnsemble', **vars(args), **config}
     experiment.log_parameters(parameters)

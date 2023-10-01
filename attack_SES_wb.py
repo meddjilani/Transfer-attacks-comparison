@@ -32,6 +32,7 @@ from cifar10_models.densenet_ghost import densenet161 as densenet161_gn, densene
 from Normalize import Normalize
 from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
 import random
+from PIL import Image
 
 
 def softmax(vector):
@@ -40,7 +41,7 @@ def softmax(vector):
     return normalized_vector
 
 def main():
-    parser = argparse.ArgumentParser(description="BASES attack")
+    parser = argparse.ArgumentParser(description="SES wb attack")
 
     parser.add_argument('--target', default='Carmon2019Unlabeled', type=str, help='Target model to use.')
     parser.add_argument('--surrogate_names',  nargs='+', default=['Standard','Ding2020MMA'], help='Surrogate models to use.')
@@ -73,7 +74,7 @@ def main():
         project_name=COMET_PROJECT,
         workspace=COMET_WORKSPACE,
     )
-    experiment.set_name("sm_baseline_ghost_"+"_".join(args.surrogate_names)+"_"+args.target) 
+    experiment.set_name("SES_wb_"+"_".join(args.surrogate_names)+"_"+args.target) 
 
     parameters = {'attack': 'QueryEnsemble', **vars(args), **config}
     experiment.log_parameters(parameters)
@@ -198,6 +199,12 @@ def main():
     # else:
     #     selected_indices = range(args.n_im)
     testloader = torch.utils.data.DataLoader( torch.utils.data.Subset(testset, range(args.n_im)), batch_size=1, shuffle = False) #sampler=torch.utils.data.sampler.SubsetRandomSampler(range(args.n_im))
+
+    #create folders
+    formatted_pairs = [f"{key}-{value}" for key, value in vars(args).items()]
+    exp = '_'.join(formatted_pairs)
+    adv_root = Path(f"adversarial images/") / exp
+    adv_root.mkdir(parents=True, exist_ok=True)
 
     success_idx_list = set()
     success_idx_list_pretend = set() # untargeted success
@@ -346,6 +353,12 @@ def main():
         metrics = {'robust_acc': rob_acc, 'suc_rate' : suc_rate, 'target_correct_pred': correct_pred, 'n_query': n_query, 'loss':loss_target[-1], 'minloss':min(loss_target), 'maxloss':max(loss_target), 'meanloss':sum(loss_target) / len(loss_target)}
         metrics.update(w_dict)
         experiment.log_metrics(metrics, step=im_idx+1)
+
+        #save adv im
+        adv_path = adv_root / f"{str(im_idx)}.png"
+        image_array = (adv_np * 255).astype(np.uint8)
+        image_pil = Image.fromarray(image_array.transpose(1, 2, 0))
+        image_pil.save(adv_path)
 
     if (args.untargeted):
         print(f"untargeted. total_success: {len(success_idx_list)}; success_rate: {len(success_idx_list)/(im_idx+1)}, avg queries: {np.mean(query_list)}")
