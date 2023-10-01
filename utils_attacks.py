@@ -137,7 +137,6 @@ def get_adv(im, adv, target, w, pert_machine, bound, eps, n_iters, alpha, resize
     for i in range(n_iters):
         adv.requires_grad=True
         input_tensor = adv
-
         if algo == 'di':
             diverse_input_tensor = input_diversity(input_tensor, resize_rate, diversity_prob)
             outputs = [model(diverse_input_tensor) for model in pert_machine]
@@ -178,7 +177,6 @@ def get_adv(im, adv, target, w, pert_machine, bound, eps, n_iters, alpha, resize
                 if l2_norm > eps:
                     pert = pert / l2_norm * eps
                 adv = (im + pert).clamp(0,1)
-
         if intermediate and i%10 == 9:
             adv_list.append(adv.detach())
     if intermediate:
@@ -203,7 +201,7 @@ def get_adv_np(im_np, target_idx, w_np, pert_machine, bound, eps, n_iters, alpha
     if adv_init is None:
         adv = torch.clone(im) # adversarial image
     else:
-        adv = torch.from_numpy(adv_init).unsqueeze(0).float().to(device)
+        raise("Use the initial image as a starter")
     target = torch.LongTensor([target_idx]).to(device)
     w = torch.from_numpy(w_np).float().to(device)
     adv, losses = get_adv(im, adv, target, w, pert_machine, bound, eps, n_iters, alpha, resize_rate, diversity_prob, algo=algo, fuse=fuse, untargeted=untargeted, intermediate=intermediate, loss_name=loss_name)
