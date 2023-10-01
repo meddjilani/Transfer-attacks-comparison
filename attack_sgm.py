@@ -14,7 +14,10 @@ from Skip_gradient_method.utils_sgm import register_hook_for_resnet, register_ho
 from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
 from cifar10_models.resnet import resnet50
 
+from utils.config import LIST_ROBUST_MODELS_C10
+
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Attack Evaluation')
+parser.add_argument('--debug', type=int, default=0)
 parser.add_argument('--model', type=str, default='Gowal2021Improving_28_10_ddpm_100m')
 parser.add_argument('--target', type=str, default='Standard')
 parser.add_argument('--n_examples', type=int, default=10)
@@ -103,7 +106,7 @@ def main(params, experiment, device):
     # create models
     if params.model != "":
         model = robustbench.utils.load_model(model_name=params.model, dataset=params.dataset, threat_model='Linf')
-        params.arch = str(model.__class__).split(".")[-1].lower()[:-2]
+        params.arch = LIST_ROBUST_MODELS_C10.get(params.model, str(model.__class__).split(".")[-1].lower()[:-2])
         experiment.log_parameter("arch", args.arch)
     else:
         net = resnet50(pretrained=True)
@@ -118,13 +121,15 @@ def main(params, experiment, device):
         step_size = params.step_size / 255.0
 
     if params.gamma < 1.0:
-        if "densenet" in args.arch:
+        if "densenet" in args.arch.lower():
             register_hook_for_densenet(model, arch=args.arch, gamma=args.gamma)
-        elif "resnet" in args.arch:
+        elif "resnet" in args.arch.lower():
             register_hook_for_resnet(model, arch=args.arch, gamma=args.gamma)
         else:
             raise ValueError('Current code only supports resnet/densenet. '
                              'You can extend this code to other architectures.')
+
+        return
 
     if params.momentum > 0.0:
         print('using PGD attack with momentum = {}'.format(params.momentum))
@@ -163,13 +168,33 @@ if __name__ == '__main__':
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
 
-    experiment = Experiment(
-        api_key=COMET_APIKEY,
-        project_name=COMET_PROJECT,
-        workspace=COMET_WORKSPACE,
-    )
+    if args.debug==1:
+        models = list(LIST_ROBUST_MODELS_C10.keys())
+        for i,k in enumerate(models):
+            src_model = k
+            args.model = src_model
+            target_model = models[(i+1)%len(models)]
+            args.target = target_model
 
-    parameters = {'attack': 'SGM',"device":device, **vars(args), **config}
-    experiment.log_parameters(parameters)
+            experiment = Experiment(
+                api_key=COMET_APIKEY,
+                project_name="debug",
+                workspace=COMET_WORKSPACE,
+            )
 
-    main(args, experiment, device)
+            parameters = {'attack': 'SGM',"device":device, **vars(args), **config}
+            experiment.log_parameters(parameters)
+
+            main(args, experiment, device)
+
+    else:
+        experiment = Experiment(
+            api_key=COMET_APIKEY,
+            project_name=COMET_PROJECT,
+            workspace=COMET_WORKSPACE,
+        )
+
+        parameters = {'attack': 'SGM', "device": device, **vars(args), **config}
+        experiment.log_parameters(parameters)
+
+        main(args, experiment, device)
