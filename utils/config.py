@@ -1,0 +1,2 @@
+
+LIST_ROBUST_MODELS_C10=["Standard","Wong2020Fast","Cui2020Learnable_34_10","Hendrycks2019Using","Gowal2020Uncovering_70_16","Carmon2019Unlabeled","Rebuffi2021Fixing_70_16_cutmix_ddpm","Gowal2021Improving_70_16_ddpm_100m","Rebuffi2021Fixing_70_16_cutmix_extra","Wang2023Better_WRN-70-16","Peng2023Robust"]
