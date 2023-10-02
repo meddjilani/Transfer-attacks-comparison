@@ -126,7 +126,7 @@ def get_adv(im, adv, target, w, pert_machine, bound, eps, n_iters, alpha, resize
     """
     device = next(pert_machine[0].parameters()).device
     n_wb = len(pert_machine)
-    if algo == 'mim' or algo == 'di':
+    if algo == 'mim':
         g = 0 # momentum
         mu = 1 # decay factor
     
@@ -161,9 +161,9 @@ def get_adv(im, adv, target, w, pert_machine, bound, eps, n_iters, alpha, resize
             if algo == 'fgm':
                 # needs a huge learning rate
                 adv = adv - alpha * grad / torch.norm(grad, p=2)
-            elif algo == 'pgd':
+            elif algo == 'pgd' or 'di':
                 adv = adv - alpha * torch.sign(grad)
-            elif algo == 'mim' or 'di':
+            elif algo == 'mim':
                 g = mu * g + grad / torch.norm(grad, p=1)
                 adv = adv - alpha * torch.sign(g)
 
