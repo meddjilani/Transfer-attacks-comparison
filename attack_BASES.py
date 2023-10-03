@@ -67,7 +67,7 @@ def main():
     )
     experiment.set_name("BASES_"+"_".join(args.surrogate_names)+"_"+args.target) 
 
-    parameters = {'attack': 'QueryEnsemble', **vars(args), **config}
+    parameters = {'attack': 'BASES', **vars(args), **config}
     experiment.log_parameters(parameters)
 
 
