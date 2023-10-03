@@ -34,6 +34,8 @@ from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
 import random
 from PIL import Image
 
+from Skip_gradient_method.utils_sgm import register_hook_for_resnet, register_hook_for_densenet
+
 
 def softmax(vector):
     exp_vector = np.exp(vector)
@@ -62,6 +64,7 @@ def main():
     parser.add_argument("--iterw", type=int, default=50, help="iterations of updating w")
     parser.add_argument("--n_im", type=int, default=10000, help="number of images")
     parser.add_argument("--untargeted", action='store_true', help="run untargeted attack")
+    parser.add_argument('--gamma', default=0.5, type=float)
     args = parser.parse_args()
 
     config = {}
@@ -199,6 +202,19 @@ def main():
     # else:
     #     selected_indices = range(args.n_im)
     testloader = torch.utils.data.DataLoader( torch.utils.data.Subset(testset, range(args.n_im)), batch_size=1, shuffle = False) #sampler=torch.utils.data.sampler.SubsetRandomSampler(range(args.n_im))
+
+    if args.algo == 'sgm':
+        print("Registering hooks")
+        for i,source_name in enumerate(surrogate_names):
+            if args.gamma < 1.0:
+                if "densenet" in source_name:
+                    register_hook_for_densenet(wb[i], arch=source_name, gamma=args.gamma)
+                elif "resnet" in source_name:
+                    register_hook_for_resnet(wb[i], arch=source_name, gamma=args.gamma)
+                else:
+                    raise ValueError('Current code only supports resnet/densenet. '
+                                    'You can extend this code to other architectures.')
+
 
     #create folders
     formatted_pairs = [f"{key}-{value}" for key, value in vars(args).items()]

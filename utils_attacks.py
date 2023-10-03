@@ -161,7 +161,7 @@ def get_adv(im, adv, target, w, pert_machine, bound, eps, n_iters, alpha, resize
             if algo == 'fgm':
                 # needs a huge learning rate
                 adv = adv - alpha * grad / torch.norm(grad, p=2)
-            elif algo == 'pgd' or 'di':
+            elif algo == 'pgd' or 'di' or 'sgm':
                 adv = adv - alpha * torch.sign(grad)
             elif algo == 'mim':
                 g = mu * g + grad / torch.norm(grad, p=1)
