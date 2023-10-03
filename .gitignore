@@ -4,3 +4,4 @@ __pycache__
 state_dicts
 app_config.py
 models
+data
