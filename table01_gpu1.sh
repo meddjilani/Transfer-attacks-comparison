@@ -8,9 +8,9 @@ export CUDA_VISIBLE_DEVICES=1
 
 #TREMBA
 #before running, in config/ directory modify the train json file 
-#python train_generator.py --config config/train.json --surrogate_names resnet34 resnet50
+python TREMBA/train_generator.py --config TREMBA/config/train.json --surrogate_names resnet34 resnet50
 #before running, in config/ directory modify the attack  json file 
-#python attack.py --config config/attack.json --device cuda --save_prefix your_save_prefix --model_name densenet161 --generator_name Cifar10_densenet161_densenet169_vgg16train_untarget
+python TREMBA/attack.py --config TREMBA/config/attack.json --device cuda --save_prefix your_save_prefix --model_name densenet161 --generator_name Cifar10_densenet161_densenet169_vgg16train_untarget
 
 
 # BASES

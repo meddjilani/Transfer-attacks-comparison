@@ -1,5 +1,5 @@
 import sys
-sys.path.append('../')
+sys.path.append('/')
 
 from comet_ml import Experiment
 import argparse
@@ -11,7 +11,7 @@ import os
 import json
 from robustbench.utils import load_model, clean_accuracy
 from utils import *
-from FCN import *
+from TREMBA.FCN import *
 from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
 from Normalize import Normalize
 from cifar10_models.vgg import vgg16_bn,vgg11_bn,vgg19_bn, vgg13_bn
@@ -106,7 +106,7 @@ experiment.log_parameters(parameters)
 
 device = torch.device(args.device if torch.cuda.is_available() else "cpu")
 
-weight = torch.load(os.path.join("G_weight", args.generator_name+".pytorch"), map_location=device)
+weight = torch.load(os.path.join("TREMBA/G_weight", args.generator_name + ".pytorch"), map_location=device)
 
 encoder_weight = {}
 decoder_weight = {}
