@@ -181,7 +181,7 @@ def main():
                     transforms.ToTensor(),
                     ])
 
-    testset = CIFAR10(root='/data', train = False, download = True, transform = transform_test)
+    testset = CIFAR10(root='../datasets/cifar10/data', train = False, download = True, transform = transform_test)
     testloader = torch.utils.data.DataLoader( torch.utils.data.Subset(testset, range(args.n_im)), batch_size=1, shuffle = False) #sampler=torch.utils.data.sampler.SubsetRandomSampler(range(args.n_im))
 
     success_idx_list = set()

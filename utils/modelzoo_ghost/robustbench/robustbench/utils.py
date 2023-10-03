@@ -554,7 +554,7 @@ def parse_args():
                         help='batch size for evaluation')
     parser.add_argument('--data_dir',
                         type=str,
-                        default='./data',
+                        default='.'../datasets/cifar10/data'',
                         help='where to store downloaded datasets')
     parser.add_argument('--corruptions_data_dir',
                         type=str,

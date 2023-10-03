@@ -194,7 +194,7 @@ def main():
                     transforms.ToTensor(),
                     ])
 
-    testset = CIFAR10(root='/data', train = False, download = True, transform = transform_test)
+    testset = CIFAR10(root='../datasets/cifar10/data', train = False, download = True, transform = transform_test)
     # if not args.untargeted:
     #     print('Targeted attack : Removing Label ', args.target_label,' images from Cifar10 test dataset')
     #     indices = [i for i in range(len(testset)) if testset[i][1] != args.target_label]
