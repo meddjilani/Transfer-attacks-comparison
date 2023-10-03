@@ -41,10 +41,12 @@ python SGM-DI-FGSM.py --target resnet50 --model resnet18 --n_examples 4 --batch_
 
 
 #TREMBA
+cd TREMBA
 #before running, in config/ directory modify the train json file 
-python train_generator.py --config config/train.json --surrogate_names resnet34 resnet50
+python train_generator.py --n_im_train 200 --n_im_test 50 --config config/train.json --surrogate_names resnet34 resnet50
 #before running, in config/ directory modify the attack  json file 
-python attack.py --config config/attack.json --device cuda --save_prefix your_save_prefix --model_name densenet161 --generator_name Cifar10_densenet161_densenet169_vgg16train_untarget
+python attack.py --n_im 10 --config config/attack.json --device cuda --save_prefix your_save_prefix --target densenet161 --generator_name Cifar10_densenet161_densenet169_vgg16train_untarget
+cd ..
 
 
 # BASES

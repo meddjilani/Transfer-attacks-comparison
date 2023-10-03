@@ -1,0 +1,23 @@
+{
+  "batch_size": 64,
+  "epsilon": 0.03125,
+  "margin": 5.0,
+  "target": false,
+  "target_class": 0,
+  
+  "print_log": false,
+  "log_interval": 10,
+  
+  "sample_size": 20,
+  "num_iters": 2500,
+  "sigma": 1.0,
+  "lr": 5.0,
+  "lr_min": 0.1,
+  "lr_decay": 2.0,
+  "momentum": 0.0,
+  "plateau_length": 20,
+  "plateau_overhead": 0.1,
+    
+  "save_path": "output",
+  "save_prefix": "TREMBA_Cifar10_Target"
+}
