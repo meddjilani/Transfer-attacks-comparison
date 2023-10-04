@@ -355,7 +355,7 @@ def main():
         rob_acc = 1-(len(success_idx_list)/(im_idx+1))
         suc_rate = 0 if correct_pred==0 else suc_adv / correct_pred
         w_dict = dict(zip(keys, w_np.tolist()))
-        metrics = {'robust_acc': rob_acc, 'suc_rate' : suc_rate, 'target_correct_pred': correct_pred, 'n_query': n_query, 'loss':loss_target[-1], 'minloss':min(loss_target), 'maxloss':max(loss_target), 'meanloss':sum(loss_target) / len(loss_target)}
+        metrics = {'robust_acc': rob_acc, 'suc_rate_step' : suc_rate, 'target_correct_pred': correct_pred, 'n_query_step': n_query, 'loss':loss_target[-1], 'minloss':min(loss_target), 'maxloss':max(loss_target), 'meanloss':sum(loss_target) / len(loss_target)}
         metrics.update(w_dict)
         experiment.log_metrics(metrics, step=im_idx+1)
 
@@ -364,6 +364,9 @@ def main():
         image_array = (adv_np * 255).astype(np.uint8)
         image_pil = Image.fromarray(image_array.transpose(1, 2, 0))
         image_pil.save(adv_path)
+
+    experiment.log_metric('suc_rate',len(success_idx_list)/(im_idx+1) )
+    [experiment.log_metric('n_query', q) for q in query_list]
 
     if (args.untargeted):
         print(f"untargeted. total_success: {len(success_idx_list)}; success_rate: {len(success_idx_list)/(im_idx+1)}, avg queries: {np.mean(query_list)}")
