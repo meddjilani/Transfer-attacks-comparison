@@ -78,7 +78,7 @@ def main():
     correct_classified_idx = []
     for im_idx,(image,label) in enumerate(val_loader):
         if len(correct_classified_idx) >= args.n_im_correct:
-            print('100 correctly classified images have been found. Finished ! ')
+            print(args.n_im_correct,' correctly classified images have been found. Finished ! ')
             break
         print(f"\nim_idx: {im_idx + 1}")
         image, label = image.to(device), label.to(device)
