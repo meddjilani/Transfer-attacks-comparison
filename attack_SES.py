@@ -191,8 +191,10 @@ def main():
         im_np = np.array(image.cpu())
         print('image mean, 1st value: ',im_np.mean(),', ',np.ravel(im_np)[0])
         gt_label = label.item()
-        tgts_label = list(range(10))
-        tgts_label.remove(gt_label)
+        tgts_label = [0,20,40,60,80,100]
+        if gt_label in tgts_label:
+            print('Removing ',gt_label,' from [0,20,40,60,80,100]')
+            tgts_label.remove(gt_label)
         tgt_label = random.choice(tgts_label)
         if args.untargeted:
             tgt_label = gt_label
