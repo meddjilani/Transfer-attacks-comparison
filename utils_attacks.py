@@ -106,7 +106,7 @@ def get_label_loss(im, model, tgt_label, loss_name, targeted=True, device="cuda:
     return pred_label, loss, top5
 
 
-def get_adv(im, adv, target, w, pert_machine, bound, eps, n_iters, alpha, algo='pgd', fuse='loss', untargeted=False, intermediate=False, loss_name='ce'):
+def get_adv(im, adv, target, w, pert_machine, bound, eps, n_iters, alpha, resize_rate, diversity_prob, algo='pgd', fuse='loss', untargeted=False, intermediate=False, loss_name='ce'):
     """Get the adversarial image by attacking the perturbation machine
     Args:
         im (torch.Tensor): original image
@@ -137,7 +137,11 @@ def get_adv(im, adv, target, w, pert_machine, bound, eps, n_iters, alpha, algo='
     for i in range(n_iters):
         adv.requires_grad=True
         input_tensor = adv
-        outputs = [model(input_tensor) for model in pert_machine]
+        if algo == 'di':
+            diverse_input_tensor = input_diversity(input_tensor, resize_rate, diversity_prob)
+            outputs = [model(diverse_input_tensor) for model in pert_machine]
+        else:
+            outputs = [model(input_tensor) for model in pert_machine]
 
         if fuse == 'loss':
             loss = sum([w[idx] * loss_fn(outputs[idx],target) for idx in range(n_wb)])
@@ -157,7 +161,7 @@ def get_adv(im, adv, target, w, pert_machine, bound, eps, n_iters, alpha, algo='
             if algo == 'fgm':
                 # needs a huge learning rate
                 adv = adv - alpha * grad / torch.norm(grad, p=2)
-            elif algo == 'pgd':
+            elif algo == 'pgd' or 'di' or 'sgm':
                 adv = adv - alpha * torch.sign(grad)
             elif algo == 'mim':
                 g = mu * g + grad / torch.norm(grad, p=1)
@@ -173,7 +177,6 @@ def get_adv(im, adv, target, w, pert_machine, bound, eps, n_iters, alpha, algo='
                 if l2_norm > eps:
                     pert = pert / l2_norm * eps
                 adv = (im + pert).clamp(0,1)
-
         if intermediate and i%10 == 9:
             adv_list.append(adv.detach())
     if intermediate:
@@ -181,7 +184,7 @@ def get_adv(im, adv, target, w, pert_machine, bound, eps, n_iters, alpha, algo='
     return adv, losses
 
 
-def get_adv_np(im_np, target_idx, w_np, pert_machine, bound, eps, n_iters, alpha, algo='mim', fuse='loss', untargeted=False, intermediate=False, loss_name='ce', adv_init=None):
+def get_adv_np(im_np, target_idx, w_np, pert_machine, bound, eps, n_iters, alpha, resize_rate, diversity_prob, algo='mim', fuse='loss', untargeted=False, intermediate=False, loss_name='ce', adv_init=None):
     """Get the numpy adversarial image
     Args:
         im_np (numpy.ndarray): original image
@@ -198,13 +201,58 @@ def get_adv_np(im_np, target_idx, w_np, pert_machine, bound, eps, n_iters, alpha
     if adv_init is None:
         adv = torch.clone(im) # adversarial image
     else:
-        adv = torch.from_numpy(adv_init).unsqueeze(0).float().to(device)
+        raise("Use the initial image as a starter")
     target = torch.LongTensor([target_idx]).to(device)
     w = torch.from_numpy(w_np).float().to(device)
-    adv, losses = get_adv(im, adv, target, w, pert_machine, bound, eps, n_iters, alpha, algo=algo, fuse=fuse, untargeted=untargeted, intermediate=intermediate, loss_name=loss_name)
+    adv, losses = get_adv(im, adv, target, w, pert_machine, bound, eps, n_iters, alpha, resize_rate, diversity_prob, algo=algo, fuse=fuse, untargeted=untargeted, intermediate=intermediate, loss_name=loss_name)
     if intermediate: # output a list of adversarial images
         adv_np = [adv_.squeeze().cpu().numpy() for adv_ in adv]
     else:
         adv_np = adv.squeeze().cpu().numpy()
     return adv_np, losses
     
+
+
+def ebad_surr_losses(im_np, target_idx, pert_machine):
+    """Get the surrogate losses on the input image
+    Args:
+        im_np (numpy.ndarray): original image
+        target_idx (int): target label
+        pert_machine (list): list of surrogate models
+        untargeted (bool): if True, use untargeted attacks.
+        loss_name (str): loss function used.
+    Returns:
+        losses (list): list of surrogates losses on the input imaage
+    """
+    device = pert_machine[0].device if hasattr(pert_machine[0], "device") else next(pert_machine[0].parameters()).device
+    im = torch.from_numpy(im_np).unsqueeze(0).float().to(device)
+    target = torch.LongTensor([target_idx]).to(device)
+
+    loss_fn = torch.nn.CrossEntropyLoss()
+    losses = []
+    for model in pert_machine:
+        logits = model(im)
+        losses.append(loss_fn(logits, target).item())
+    return losses
+
+
+def input_diversity(x, resize_rate, diversity_prob):
+    img_size = x.shape[-1]
+    img_resize = int(img_size * resize_rate)
+
+    if resize_rate < 1:
+        img_size = img_resize
+        img_resize = x.shape[-1]
+
+    rnd = torch.randint(low=img_size, high=img_resize, size=(1,), dtype=torch.int32)
+    rescaled = F.interpolate(x, size=[rnd, rnd], mode='bilinear', align_corners=False)
+    h_rem = img_resize - rnd
+    w_rem = img_resize - rnd
+    pad_top = torch.randint(low=0, high=h_rem.item(), size=(1,), dtype=torch.int32)
+    pad_bottom = h_rem - pad_top
+    pad_left = torch.randint(low=0, high=w_rem.item(), size=(1,), dtype=torch.int32)
+    pad_right = w_rem - pad_left
+
+    padded = F.pad(rescaled, [pad_left.item(), pad_right.item(), pad_top.item(), pad_bottom.item()], value=0)
+
+    return padded if torch.rand(1) < diversity_prob else x
