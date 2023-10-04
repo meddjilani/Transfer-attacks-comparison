@@ -22,7 +22,7 @@ def load_model(model_name, device):
     Returns:
         model (torchvision.models): the loaded model
     """
-    model = getattr(models, model_name)(pretrained=True).to(device).eval()
+    model = getattr(models, model_name)(pretrained=True)
     model = nn.Sequential(
         Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         model
