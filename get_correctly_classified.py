@@ -36,6 +36,7 @@ def main():
     parser.add_argument("--n_wb", type=int, default=24, help="number of models")
     parser.add_argument("--n_im", type=int, default=5000, help="number of images")
     parser.add_argument("--n_im_correct", type=int, default=100, help="number of images")
+    parser.add_argument("--imagenet_folder", type=str, default='/home/public/datasets/imagenet/ILSVRC2012/val', help="Path to ImageNet test")
 
 
     args = parser.parse_args()
@@ -68,7 +69,7 @@ def main():
     ])
 
 
-    data_dir = './ILSVRC2012_img_val_subset'
+    data_dir = args.imagenet_folder
 
     val_datasets = datasets.ImageFolder(os.path.join(data_dir), transform)
     # print('Validation dataset size:', len(val_datasets))
@@ -101,12 +102,6 @@ def main():
     with open(file_path, 'w') as file:
         file.write(correct_classified_idx_as_string)
 
-
-
-
-
- 
-    
 
 
 if __name__ == '__main__':
