@@ -1,7 +1,7 @@
-# New attack cifar10
+# New attack Imagenet
 
-* Our new attack on cifar10 transfers adversarial examples from an ensemble of surrogate models to a black-box victim model.  
+* Our new attack on Imagenet transfers adversarial examples from an ensemble of surrogate models to a black-box victim model.  
 * We utilize the feedback of the victim model to adjust the weights attributed to each model in the ensemble.  
 * We diversify the surrogate models by applying the property of ghost networks with keeping the same search space dimension.  
 
-Download the non-robust pretrained models on cifar10 from : https://github.com/huyvnphan/PyTorch_CIFAR10.git, then move the `state_dicts` folder to `cifar10_models/`
+The evaluation of our proposed approach is done using pretrained models from torchvision
