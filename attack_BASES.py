@@ -46,22 +46,6 @@ def load_model(model_name, device):
     return model
 
 
-def load_model_ghost(model_name, device):
-    """Load the model according to the idx in list model_names
-    Args: 
-        model_name (str): the name of model, chosen from the following list
-        model_names = 
-    Returns:
-        model (torchvision.models): the loaded model
-    """
-    model = getattr(ghost_models, model_name)(pretrained=False)
-    model = nn.Sequential(
-        Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        model
-    ).to(device).eval()
-    return model
-
-
 def softmax(vector):
     exp_vector = np.exp(vector)
     normalized_vector = exp_vector / np.sum(exp_vector)
@@ -148,18 +132,8 @@ def main():
 
     wb = []
     for model_name in models_names:
-        if 'densenet' in model_name or 'resnet' in model_name:
-            print('Using Ghost networks for ',model_name)
-            test_ghost = load_model_ghost(model_name, device)
-            test = load_model(model_name, device)
-
-            torch.save(test.state_dict(), model_name+'_state_dict.pth')
-            test_ghost.load_state_dict(torch.load(model_name+'_state_dict.pth'))
-
-            wb.append(test_ghost)
-        else:
-            print(f"Load: {model_name}")
-            wb.append(load_model(model_name, device))
+        print(f"Load: {model_name}")
+        wb.append(load_model(model_name, device))
 
     
     victim_model = load_model(args.target, device)
