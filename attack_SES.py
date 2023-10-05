@@ -74,7 +74,7 @@ def main():
     parser.add_argument('--target', default='vgg19', type=str, help='Target model to use.')
     parser.add_argument("--untargeted", action='store_true', help="run untargeted attack")
     parser.add_argument("--n_models", type=int, default=20, help="number of models")
-
+    parser.add_argument("--dataset", type=str, default=100, help="imagenet1000")
 
     parser.add_argument("--bound", default='linf', choices=['linf','l2'], help="bound in linf or l2 norm ball")
     parser.add_argument("--eps", type=int, default=16/255, help="perturbation bound: 10 for linf, 3128 for l2")
@@ -101,7 +101,7 @@ def main():
     )
     experiment.set_name("SES_ImageNet"+"_"+args.target) 
 
-    parameters = {'attack': 'SES', **vars(args), "targeted":False if args.untargeted else True, "dataset":"imagenet"}
+    parameters = {'attack': 'SES', **vars(args), "targeted":False if args.untargeted else True, "dataset":args.dataset}
     experiment.log_parameters(parameters)
 
     
@@ -181,9 +181,15 @@ def main():
     mean_weights = lambda tab: [sum(col) / len(tab) for col in zip(*tab)] if len(tab) > 0 else []
     w_list = []
 
-    for im_idx,(image,label) in tqdm(enumerate(testloader)):
+    for im_idx,batch in tqdm(enumerate(testloader)):
         loss_target = []
         successful = 0
+
+        if len(batch)==2:
+            (image, label) = batch
+            tgt_label = None
+        else:
+            (image, label, tgt_label) = batch
         print(f"im_idx: {im_idx + 1}")
         image, label = image.to(device), label.to(device)
         with torch.no_grad():
@@ -195,11 +201,13 @@ def main():
         im_np = np.array(image.cpu())
         print('image mean, 1st value: ',im_np.mean(),', ',np.ravel(im_np)[0])
         gt_label = label.item()
-        tgts_label = [0,20,40,60,80,100]
-        if gt_label in tgts_label:
-            print('Removing ',gt_label,' from [0,20,40,60,80,100]')
-            tgts_label.remove(gt_label)
-        tgt_label = random.choice(tgts_label)
+        if tgt_label is None:
+            tgts_label = [0,20,40,60,80,100]
+            if gt_label in tgts_label:
+                print('Removing ',gt_label,' from [0,20,40,60,80,100]')
+                tgts_label.remove(gt_label)
+            tgt_label = random.choice(tgts_label)
+
         if args.untargeted:
             tgt_label = gt_label
         else:
