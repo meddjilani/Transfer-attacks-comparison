@@ -99,7 +99,7 @@ def main():
     )
     experiment.set_name("SES_ImageNet"+"_"+args.target) 
 
-    parameters = {'attack': 'QueryEnsemble', **vars(args)}
+    parameters = {'attack': 'SES', **vars(args)}
     experiment.log_parameters(parameters)
 
     
