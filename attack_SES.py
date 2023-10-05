@@ -28,6 +28,7 @@ import torchvision.models as models
 import torchvision.transforms as transforms
 from torchvision import datasets
 import ImageNet_models as ghost_models
+from utils.datasets import ImageNet1000Dataset
 
 
 def load_model(model_name, device):
@@ -133,7 +134,10 @@ def main():
 
     data_dir = args.imagenet_folder
 
-    testset = datasets.ImageFolder(os.path.join(data_dir), transform)
+    if args.dataset=="imagenet1000":
+        testset = ImageNet1000Dataset(data_dir,transform)
+    else:
+        testset = datasets.ImageFolder(os.path.join(data_dir), transform)
     # print('Validation dataset size:', len(val_datasets))
     testloader = torch.utils.data.DataLoader( torch.utils.data.Subset(testset, range(args.n_im)), batch_size=1, shuffle = False)
 
