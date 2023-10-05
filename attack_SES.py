@@ -231,7 +231,7 @@ def main():
             query_list.append(n_query)
             if label.item() == pred_vic:
                 suc_adv +=1
-            successful = 1
+                successful = 1
         else: 
             idx_w = 0         # idx of wb in W
             last_idx = -1    # if no changes after one round, reduce the learning rate
@@ -260,8 +260,9 @@ def main():
                     w_list.append(w_np.tolist())
                     if label.item() == pred_vic:
                         suc_adv +=1
+                        successful = 1
                     loss_target.append(loss_plus)
-                    successful = 1
+
                     break
 
                 w_np_temp_minus = w_np.copy()
@@ -287,8 +288,9 @@ def main():
                     w_list.append(w_np.tolist())
                     if label.item() == pred_vic:
                         suc_adv +=1
+                        successful = 1
                     loss_target.append(loss_minus)
-                    successful = 1
+
                     break
 
 
