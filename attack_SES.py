@@ -188,6 +188,7 @@ def main():
     for im_idx,batch in tqdm(enumerate(testloader)):
         loss_target = []
         successful = 0
+        successful_exact = 0
 
         if len(batch)==2:
             (image, label) = batch
@@ -235,7 +236,8 @@ def main():
             query_list.append(n_query)
             if label.item() == pred_vic:
                 suc_adv +=1
-                successful = 1
+                successful_exact = 1
+            successful = 1
         else: 
             idx_w = 0         # idx of wb in W
             last_idx = -1    # if no changes after one round, reduce the learning rate
@@ -264,7 +266,8 @@ def main():
                     w_list.append(w_np.tolist())
                     if label.item() == pred_vic:
                         suc_adv +=1
-                        successful = 1
+                        successful_exact = 1
+                    successful = 1
                     loss_target.append(loss_plus)
 
                     break
@@ -292,7 +295,8 @@ def main():
                     w_list.append(w_np.tolist())
                     if label.item() == pred_vic:
                         suc_adv +=1
-                        successful = 1
+                        successful_exact = 1
+                    successful = 1
                     loss_target.append(loss_minus)
 
                     break
@@ -325,7 +329,7 @@ def main():
         rob_acc = 1-(len(success_idx_list)/(im_idx+1))
         suc_rate = 0 if correct_pred==0 else suc_adv / correct_pred
         w_dict = dict(zip(keys, w_np.tolist()))
-        metrics = {'robust_acc': rob_acc, 'suc_rate':successful,'suc_rate_steps' : suc_rate, 'target_correct_pred': correct_pred, 'n_query': n_query, 'loss':loss_target[-1], 'minloss':min(loss_target), 'maxloss':max(loss_target), 'meanloss':sum(loss_target) / len(loss_target)}
+        metrics = {'robust_acc': rob_acc, 'suc_rate_exact':successful_exact, 'suc_rate':successful,'suc_rate_steps' : suc_rate, 'target_correct_pred': correct_pred, 'n_query': n_query, 'loss':loss_target[-1], 'minloss':min(loss_target), 'maxloss':max(loss_target), 'meanloss':sum(loss_target) / len(loss_target)}
 
 
         metrics.update(w_dict)
