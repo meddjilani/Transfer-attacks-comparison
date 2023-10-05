@@ -33,8 +33,7 @@ def load_model(model_name, device):
 def main():
     parser = argparse.ArgumentParser(description="get_correctly_classified")
     parser.add_argument("--gpu", type=int, default=0, help="GPU ID: 0,1")
-    parser.add_argument("--n_models", type=int, default=21, help="number of images")
-    parser.add_argument("--n_wb", type=int, default=24, help="number of models")
+    parser.add_argument("--n_models", type=int, default=21, help="number of surrogate models")
     parser.add_argument("--n_im", type=int, default=5000, help="number of images")
     parser.add_argument("--n_im_correct", type=int, default=100, help="number of images")
     parser.add_argument("--imagenet_folder", type=str, default='/home/public/datasets/imagenet/ILSVRC2012/val', help="Path to ImageNet test")
@@ -44,18 +43,17 @@ def main():
 
 
     device = f'cuda:{args.gpu}'
-    n_wb = args.n_wb
      # load surrogate models
     models_names = ['densenet121', 'vgg16_bn', 'resnet18', 'squeezenet1_1', 'googlenet', \
                 'mnasnet1_0', 'densenet161', 'efficientnet_b0', \
                 'regnet_y_400mf', 'resnext101_32x8d', 'convnext_small', \
                 'vgg13', 'resnet50', 'densenet201', 'inception_v3', 'shufflenet_v2_x1_0', \
                 'mobilenet_v3_small', 'wide_resnet50_2', 'efficientnet_b4', 'regnet_x_400mf', 'vit_b_16']
-    models_names = models_names[:ars.n_models]
+    models_names = models_names[:args.n_models]
     models_names = models_names + ['vgg19', 'densenet121', 'resnext50_32x4d']
     
     wb = []
-    for model_name in models_names[:n_wb]:
+    for model_name in models_names:
         print(f"load: {model_name}")
         wb.append(load_model(model_name, device))
 

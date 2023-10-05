@@ -73,6 +73,8 @@ def main():
     parser.add_argument("--n_im", type=int, default=10000, help="number of images")
     parser.add_argument('--target', default='vgg19', type=str, help='Target model to use.')
     parser.add_argument("--untargeted", action='store_true', help="run untargeted attack")
+    parser.add_argument("--n_models", type=int, default=20, help="number of models")
+
 
     parser.add_argument("--bound", default='linf', choices=['linf','l2'], help="bound in linf or l2 norm ball")
     parser.add_argument("--eps", type=int, default=16/255, help="perturbation bound: 10 for linf, 3128 for l2")
@@ -136,12 +138,12 @@ def main():
     testloader = torch.utils.data.DataLoader( torch.utils.data.Subset(testset, range(args.n_im)), batch_size=1, shuffle = False)
 
      # load surrogate models
-    models_names = ['densenet161', 'vgg16_bn', 'resnet18', 'squeezenet1_1', 'googlenet', \
+    models_names = ['vgg16_bn', 'resnet18', 'squeezenet1_1', 'googlenet', \
                 'mnasnet1_0', 'densenet161', 'efficientnet_b0', \
                 'regnet_y_400mf', 'resnext101_32x8d', 'convnext_small', \
                 'vgg13', 'resnet50', 'densenet201', 'inception_v3', 'shufflenet_v2_x1_0', \
                 'mobilenet_v3_small', 'wide_resnet50_2', 'efficientnet_b4', 'regnet_x_400mf', 'vit_b_16']
-    
+    models_names = models_names[:args.n_models]
     n_wb = len(models_names)
 
     wb = []
