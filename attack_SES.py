@@ -71,6 +71,7 @@ def main():
     parser = argparse.ArgumentParser(description="SES attack ImageNet")
 
     parser.add_argument("--n_im", type=int, default=10000, help="number of images")
+    parser.add_argument("--n_models", type=int, default=21, help="number of images")
     parser.add_argument('--target', default='vgg19', type=str, help='Target model to use.')
     parser.add_argument("--untargeted", action='store_true', help="run untargeted attack")
 
@@ -141,7 +142,8 @@ def main():
                 'regnet_y_400mf', 'resnext101_32x8d', 'convnext_small', \
                 'vgg13', 'resnet50', 'densenet201', 'inception_v3', 'shufflenet_v2_x1_0', \
                 'mobilenet_v3_small', 'wide_resnet50_2', 'efficientnet_b4', 'regnet_x_400mf', 'vit_b_16']
-    
+    models_names = models_names[:ars.n_models]
+    models_names = models_names + ['vgg19', 'densenet121', 'resnext50_32x4d']
     n_wb = len(models_names)
 
     wb = []
