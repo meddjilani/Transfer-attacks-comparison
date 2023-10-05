@@ -56,9 +56,7 @@ class ImageNet1000Dataset(Dataset):
 
     def __getitem__(self, im_idx):
 
-        print("loading imagenet1000 of index", im_idx)
         image = Image.open(self.img_paths[im_idx]).convert('RGB')
-
 
         gt_label = self.gt_labels[im_idx]
         tgt_label = self.tgt_labels[im_idx]
