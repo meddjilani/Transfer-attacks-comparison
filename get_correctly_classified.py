@@ -4,7 +4,7 @@ SES (ours)
 
 import os
 import argparse
-from tqdm import tqdm
+import json
 import torch
 import torch.nn as nn
 import torchvision.models as models
@@ -34,10 +34,9 @@ def main():
     parser = argparse.ArgumentParser(description="get_correctly_classified")
     parser.add_argument("--gpu", type=int, default=0, help="GPU ID: 0,1")
     parser.add_argument("--n_models", type=int, default=21, help="number of surrogate models")
-    parser.add_argument("--n_im", type=int, default=5000, help="number of images")
+    parser.add_argument("--n_im", type=int, default=1000, help="number of images")
     parser.add_argument("--n_im_correct", type=int, default=100, help="number of images")
     parser.add_argument("--imagenet_folder", type=str, default='/home/public/datasets/imagenet/ILSVRC2012/val', help="Path to ImageNet test")
-
 
     args = parser.parse_args()
 
@@ -99,9 +98,9 @@ def main():
     
     correct_classified_idx_as_string = str(correct_classified_idx)
 
-    file_path = "correct_classified_idx.txt"
+    file_path = "correct_classified_idx.json"
     with open(file_path, 'w') as file:
-        file.write(correct_classified_idx_as_string)
+        json.dump(correct_classified_idx_as_string, file)
 
 
 
