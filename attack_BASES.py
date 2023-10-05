@@ -79,9 +79,9 @@ def main():
         project_name=COMET_PROJECT,
         workspace=COMET_WORKSPACE,
     )
-    experiment.set_name("SES_ImageNet"+"_"+args.target) 
+    experiment.set_name("BASES_ImageNet"+"_"+args.target)
 
-    parameters = {'attack': 'SES', **vars(args)}
+    parameters = {'attack': 'BASES', **vars(args)}
     experiment.log_parameters(parameters)
 
     
