@@ -101,7 +101,7 @@ def main():
     )
     experiment.set_name("SES_ImageNet"+"_"+args.target) 
 
-    parameters = {'attack': 'SES', **vars(args)}
+    parameters = {'attack': 'SES', **vars(args), "targeted":False if args.untargeted else True, "dataset":"imagenet"}
     experiment.log_parameters(parameters)
 
     
