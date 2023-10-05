@@ -46,10 +46,6 @@ def load_model(model_name, device):
     return model
 
 
-def softmax(vector):
-    exp_vector = np.exp(vector)
-    normalized_vector = exp_vector / np.sum(exp_vector)
-    return normalized_vector
 
 def main():
     parser = argparse.ArgumentParser(description="SES attack ImageNet")
@@ -203,7 +199,6 @@ def main():
             while n_query < args.iterw:
                 w_np_temp_plus = w_np.copy()
                 w_np_temp_plus[idx_w] += lr_w
-                w_np_temp_plus = softmax(w_np_temp_plus)
                 adv_np_plus, losses_plus = get_adv_np(im_np, tgt_label, w_np_temp_plus, wb, bound, eps, n_iters, alpha, resize_rate, diversity_prob, algo = algo, fuse=fuse, untargeted=args.untargeted, loss_name=loss_name, adv_init=None)
                 label_plus, loss_plus, _ = get_label_loss(adv_np_plus, victim_model, tgt_label, loss_name, targeted = not args.untargeted, device=device)
                 n_query += 1
@@ -229,7 +224,6 @@ def main():
 
                 w_np_temp_minus = w_np.copy()
                 w_np_temp_minus[idx_w] -= lr_w
-                w_np_temp_minus = softmax(w_np_temp_minus)
                 adv_np_minus, losses_minus = get_adv_np(im_np, tgt_label, w_np_temp_minus, wb, bound, eps, n_iters, alpha, resize_rate, diversity_prob, algo = algo, fuse=fuse, untargeted=args.untargeted, loss_name=loss_name, adv_init=None)
                 label_minus, loss_minus, _ = get_label_loss(adv_np_minus, victim_model, tgt_label, loss_name, targeted = not args.untargeted, device=device)
                 n_query += 1
@@ -269,9 +263,8 @@ def main():
 
                 idx_w = (idx_w+1)% n_wb
                 
-                if n_query > 5 and last_idx == n_wb-1:
-                    #lr_w /= 2 # decrease the lr
-                    lr_w = lr_w * 0.75
+                if n_query > 5 and last_idx == idx_w:
+                    lr_w /= 2 # decrease the lr
                     print(f"lr_w: {lr_w}")
                 
                 if n_query >= args.iterw:
