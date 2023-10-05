@@ -65,7 +65,7 @@ def main():
     parser.add_argument("--loss_name", nargs="?", default='cw', help="the name of the loss")
     parser.add_argument("--algo", default='pgd', help="the algo used inside the perturbation machine")
     parser.add_argument("--x", type=int, default=3, help="times alpha by x")
-    parser.add_argument("--lr", type=float, default=0.5, help="learning rate of w")
+    parser.add_argument("--lr", type=float, default=0.005, help="learning rate of w")
     parser.add_argument("--resize_rate", type=float, default=0.9, help="resize factor used in input diversity")
     parser.add_argument("--diversity_prob", type=float, default=0.5, help="the probability of applying input diversity")
     parser.add_argument("--iterw", type=int, default=50, help="iterations of updating w")
