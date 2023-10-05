@@ -75,7 +75,7 @@ def main():
     parser.add_argument('--target', default='vgg19', type=str, help='Target model to use.')
     parser.add_argument("--untargeted", action='store_true', help="run untargeted attack")
     parser.add_argument("--n_models", type=int, default=20, help="number of models")
-    parser.add_argument("--dataset", type=str, default=100, help="imagenet1000")
+    parser.add_argument("--dataset", type=str, default=100, help="imagenet")
 
     parser.add_argument("--bound", default='linf', choices=['linf','l2'], help="bound in linf or l2 norm ball")
     parser.add_argument("--eps", type=int, default=16/255, help="perturbation bound: 10 for linf, 3128 for l2")
