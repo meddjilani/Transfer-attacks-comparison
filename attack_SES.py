@@ -168,9 +168,9 @@ def main():
     victim_model = load_model(args.target, device)
 
     # create folders
-    formatted_pairs = [f"{key}-{value}" for key, value in vars(args).items()]
+    formatted_pairs = [f"{key}-{str(value)[:10]}" for key, value in vars(args).items() if key!="imagenet_folder"]
     exp = '_'.join(formatted_pairs)
-    adv_root = Path(f"adversarial images/") / exp
+    adv_root = Path(f"advs/") / exp
     adv_root.mkdir(parents=True, exist_ok=True)
 
     success_idx_list = set()
