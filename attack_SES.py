@@ -238,6 +238,7 @@ def main():
                 suc_adv += 1
                 successful_exact = 1
             successful = 1
+            n_query_succesful = n_query
         else:
             idx_w = 0  # idx of wb in W
             last_idx = -1  # if no changes after one round, reduce the learning rate
@@ -272,6 +273,7 @@ def main():
                         successful_exact = 1
                     successful = 1
                     loss_target.append(loss_plus)
+                    n_query_succesful = n_query
 
                     break
 
@@ -304,6 +306,7 @@ def main():
                         successful_exact = 1
                     successful = 1
                     loss_target.append(loss_minus)
+                    n_query_succesful = n_query
 
                     break
 
@@ -330,13 +333,14 @@ def main():
                 if n_query >= args.iterw:
                     print('failed ', gt_label, ' ------> ', label_idx, ' n_query: ', n_query, ' \n')
                     query_list.append(n_query)
+                    n_query_succesful = 0
 
         rob_acc = 1 - (len(success_idx_list) / (im_idx + 1))
         suc_rate = 0 if correct_pred == 0 else suc_adv / correct_pred
         w_dict = dict(zip(keys, w_np.tolist()))
         metrics = {'robust_acc': rob_acc, 'suc_rate_exact': successful_exact, 'suc_rate': successful,
                    'suc_rate_steps': suc_rate, 'target_correct_pred': correct_pred, 'n_query': n_query,
-                   'loss': loss_target[-1], 'minloss': min(loss_target), 'maxloss': max(loss_target),
+                   'n_query_succesful': n_query_succesful, 'loss': loss_target[-1], 'minloss': min(loss_target), 'maxloss': max(loss_target),
                    'meanloss': sum(loss_target) / len(loss_target)}
 
         metrics.update(w_dict)
