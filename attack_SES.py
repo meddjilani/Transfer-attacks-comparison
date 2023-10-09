@@ -338,10 +338,15 @@ def main():
         rob_acc = 1 - (len(success_idx_list) / (im_idx + 1))
         suc_rate = 0 if correct_pred == 0 else suc_adv / correct_pred
         w_dict = dict(zip(keys, w_np.tolist()))
+
         metrics = {'robust_acc': rob_acc, 'suc_rate_exact': successful_exact, 'suc_rate': successful,
-                   'suc_rate_steps': suc_rate, 'target_correct_pred': correct_pred, 'n_query': n_query,
-                   'n_query_succesful': n_query_succesful, 'loss': loss_target[-1], 'minloss': min(loss_target), 'maxloss': max(loss_target),
+                   'suc_rate_steps': suc_rate, 'target_correct_pred': correct_pred, 'n_query': n_query, 'loss': loss_target[-1], 'minloss': min(loss_target), 'maxloss': max(loss_target),
                    'meanloss': sum(loss_target) / len(loss_target)}
+
+        if successful==1:
+            # Only log n_query_succesful if it the attack is successful, in the other cases, don't log it as 0 otherwise the average will be lowered down
+            metrics['n_query_succesful'] = n_query_succesful
+
 
         metrics.update(w_dict)
         experiment.log_metrics(metrics, step=im_idx + 1)
