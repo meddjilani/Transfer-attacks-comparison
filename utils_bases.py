@@ -167,7 +167,7 @@ def get_loss(im, model, tgt_label, loss_name):
     return loss
 
 
-def load_imagenet_1000(dataset_root = "imagenet1000"):
+def load_imagenet_1000(dataset_path = "imagenet1000"):
     """
     Dataset downoaded form kaggle
     https://www.kaggle.com/datasets/google-brain/nips-2017-adversarial-learning-development-set
@@ -180,8 +180,9 @@ def load_imagenet_1000(dataset_root = "imagenet1000"):
         gt_labels (list of ints): the ground truth label of images 
         tgt_labels (list of ints): the target label of images 
     """
-    dataset_root = Path(dataset_root)
-    img_paths = list(sorted(dataset_root.glob('*.png')))
+    dataset_root = Path(dataset_path)
+    img_root = Path(dataset_path + "/images")
+    img_paths = list(sorted(img_root.glob('*.png')))
     gt_dict = defaultdict(int)
     tgt_dict = defaultdict(int)
     with open(dataset_root / "images.csv", newline='') as csvfile:

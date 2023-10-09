@@ -38,7 +38,7 @@ def main():
     parser.add_argument("--gpu", type=int, default=0, help="GPU ID: 0,1")
     parser.add_argument("--root", nargs="?", default='result', help="the folder name of result")
     parser.add_argument("--dataset_root", nargs="?", default='imagenet1000/images', help="the folder name of imagenet")
-
+    parser.add_argument("--dataset", type=str, default=100, help="imagenet")
     
     parser.add_argument("--fuse", nargs="?", default='loss', help="the fuse method. loss or logit")
     parser.add_argument("--loss_name", nargs="?", default='cw', help="the name of the loss")
@@ -59,7 +59,8 @@ def main():
         workspace=COMET_WORKSPACE,
     )
     experiment.set_name("SES_ver2" + "_" + args.victim)
-    parameters = {'attack': 'SES_ver2', **vars(args)}
+    parameters = {'attack': 'SES_ver2', **vars(args), "targeted": False if args.untargeted else True,
+                  "dataset": args.dataset}
     experiment.log_parameters(parameters)
 
 
@@ -75,7 +76,7 @@ def main():
     keys = ['w' + str(i) for i in range(args.n_wb)]
 
     # load images
-    img_paths, gt_labels, tgt_labels = load_imagenet_1000(dataset_root = args.dataset_root)
+    img_paths, gt_labels, tgt_labels = load_imagenet_1000(dataset_path = args.dataset_root)
 
     # load surrogate models
     surrogate_names = ['vgg16_bn', 'resnet18', 'squeezenet1_1', 'googlenet', \
