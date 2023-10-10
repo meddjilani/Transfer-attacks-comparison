@@ -274,6 +274,7 @@ def main():
         w_dict = dict(zip(keys, w_np.tolist()))
         metrics.update(w_dict)
         experiment.log_metrics(metrics, step=im_idx + 1)
+        [experiment.log_metric('n_query_succesful',m,  step=im_idx + 1) for m in query_list]
 
 
         # save adv image
