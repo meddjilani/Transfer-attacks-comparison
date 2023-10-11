@@ -20,7 +20,7 @@ model_urls = {
 
 
 class _DenseLayer(nn.Module):
-    def __init__(self, num_input_features, growth_rate, bn_size, drop_rate, memory_efficient=False):
+    def __init__(self, num_input_features, growth_rate, bn_size, drop_rate, memory_efficient=False,random_range=0.11):
         super(_DenseLayer, self).__init__()
         self.add_module('norm1', nn.BatchNorm2d(num_input_features)),
         self.add_module('relu1', nn.ReLU(inplace=True)),
@@ -35,9 +35,9 @@ class _DenseLayer(nn.Module):
         self.drop_rate = float(drop_rate)
         self.memory_efficient = memory_efficient
 
-    def bn_function(self, inputs):
+    def bn_function(self, inputs, random_range):
         # type: (List[Tensor]) -> Tensor
-        random_range = 0.99
+        random_range = random_range
         perturb_var = torch.empty_like(inputs[-1]).uniform_(1 - random_range, 1 + random_range)
         inputs[-1] = inputs[-1] * perturb_var
         concated_features = torch.cat(inputs, 1)
@@ -56,7 +56,7 @@ class _DenseLayer(nn.Module):
     def call_checkpoint_bottleneck(self, input):
         # type: (List[Tensor]) -> Tensor
         def closure(*inputs):
-            return self.bn_function(*inputs)
+            return self.bn_function(*inputs, random_range)
 
         return cp.checkpoint(closure, input)
 
@@ -83,7 +83,7 @@ class _DenseLayer(nn.Module):
 
             bottleneck_output = self.call_checkpoint_bottleneck(prev_features)
         else:
-            bottleneck_output = self.bn_function(prev_features)
+            bottleneck_output = self.bn_function(prev_features, random_range)
 
         new_features = self.conv2(self.relu2(self.norm2(bottleneck_output)))
         if self.drop_rate > 0:
@@ -95,7 +95,7 @@ class _DenseLayer(nn.Module):
 class _DenseBlock(nn.ModuleDict):
     _version = 2
 
-    def __init__(self, num_layers, num_input_features, bn_size, growth_rate, drop_rate, memory_efficient=False):
+    def __init__(self, num_layers, num_input_features, bn_size, growth_rate, drop_rate, memory_efficient=False,random_range=0.11):
         super(_DenseBlock, self).__init__()
         for i in range(num_layers):
             layer = _DenseLayer(
@@ -104,6 +104,7 @@ class _DenseBlock(nn.ModuleDict):
                 bn_size=bn_size,
                 drop_rate=drop_rate,
                 memory_efficient=memory_efficient,
+                random_range=random_range,
             )
             self.add_module('denselayer%d' % (i + 1), layer)
 
@@ -142,7 +143,7 @@ class DenseNet(nn.Module):
     """
 
     def __init__(self, growth_rate=32, block_config=(6, 12, 24, 16),
-                 num_init_features=64, bn_size=4, drop_rate=0, num_classes=1000, memory_efficient=False):
+                 num_init_features=64, random_range=0.11, bn_size=4, drop_rate=0, num_classes=1000, memory_efficient=False):
 
         super(DenseNet, self).__init__()
 
@@ -164,7 +165,8 @@ class DenseNet(nn.Module):
                 bn_size=bn_size,
                 growth_rate=growth_rate,
                 drop_rate=drop_rate,
-                memory_efficient=memory_efficient
+                memory_efficient=memory_efficient,
+                random_range=random_range,
             )
             self.features.add_module('denseblock%d' % (i + 1), block)
             num_features = num_features + num_layers * growth_rate
@@ -217,15 +219,15 @@ def _load_state_dict(model, model_url, progress):
     model.load_state_dict(state_dict)
 
 
-def _densenet(arch, growth_rate, block_config, num_init_features, pretrained, progress,
+def _densenet(arch, growth_rate, block_config, num_init_features, pretrained, progress, random_range,
               **kwargs):
-    model = DenseNet(growth_rate, block_config, num_init_features, **kwargs)
+    model = DenseNet(growth_rate, block_config, num_init_features, random_range, **kwargs)
     if pretrained:
         _load_state_dict(model, model_urls[arch], progress)
     return model
 
 
-def densenet121(pretrained=False, progress=True, **kwargs):
+def densenet121(pretrained=False, progress=True, random_range=0.11, **kwargs):
     r"""Densenet-121 model from
     `"Densely Connected Convolutional Networks" <https://arxiv.org/pdf/1608.06993.pdf>`_
 
@@ -235,11 +237,11 @@ def densenet121(pretrained=False, progress=True, **kwargs):
         memory_efficient (bool) - If True, uses checkpointing. Much more memory efficient,
           but slower. Default: *False*. See `"paper" <https://arxiv.org/pdf/1707.06990.pdf>`_
     """
-    return _densenet('densenet121', 32, (6, 12, 24, 16), 64, pretrained, progress,
+    return _densenet('densenet121', 32, (6, 12, 24, 16), 64, pretrained, progress, random_range,
                      **kwargs)
 
 
-def densenet161(pretrained=False, progress=True, **kwargs):
+def densenet161(pretrained=False, progress=True, random_range=0.11, **kwargs):
     r"""Densenet-161 model from
     `"Densely Connected Convolutional Networks" <https://arxiv.org/pdf/1608.06993.pdf>`_
 
@@ -249,11 +251,11 @@ def densenet161(pretrained=False, progress=True, **kwargs):
         memory_efficient (bool) - If True, uses checkpointing. Much more memory efficient,
           but slower. Default: *False*. See `"paper" <https://arxiv.org/pdf/1707.06990.pdf>`_
     """
-    return _densenet('densenet161', 48, (6, 12, 36, 24), 96, pretrained, progress,
+    return _densenet('densenet161', 48, (6, 12, 36, 24), 96, pretrained, progress, random_range,
                      **kwargs)
 
 
-def densenet169(pretrained=False, progress=True, **kwargs):
+def densenet169(pretrained=False, progress=True, random_range=0.11, **kwargs):
     r"""Densenet-169 model from
     `"Densely Connected Convolutional Networks" <https://arxiv.org/pdf/1608.06993.pdf>`_
 
@@ -263,11 +265,11 @@ def densenet169(pretrained=False, progress=True, **kwargs):
         memory_efficient (bool) - If True, uses checkpointing. Much more memory efficient,
           but slower. Default: *False*. See `"paper" <https://arxiv.org/pdf/1707.06990.pdf>`_
     """
-    return _densenet('densenet169', 32, (6, 12, 32, 32), 64, pretrained, progress,
+    return _densenet('densenet169', 32, (6, 12, 32, 32), 64, pretrained, progress, random_range,
                      **kwargs)
 
 
-def densenet201(pretrained=False, progress=True, **kwargs):
+def densenet201(pretrained=False, progress=True, random_range=0.11, **kwargs):
     r"""Densenet-201 model from
     `"Densely Connected Convolutional Networks" <https://arxiv.org/pdf/1608.06993.pdf>`_
 
@@ -277,5 +279,5 @@ def densenet201(pretrained=False, progress=True, **kwargs):
         memory_efficient (bool) - If True, uses checkpointing. Much more memory efficient,
           but slower. Default: *False*. See `"paper" <https://arxiv.org/pdf/1707.06990.pdf>`_
     """
-    return _densenet('densenet201', 32, (6, 12, 48, 32), 64, pretrained, progress,
+    return _densenet('densenet201', 32, (6, 12, 48, 32), 64, pretrained, progress, random_range,
                      **kwargs)
