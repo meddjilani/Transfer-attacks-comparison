@@ -31,6 +31,7 @@ def softmax(vector):
 def main():
     parser = argparse.ArgumentParser(description="BASES attack")
     parser.add_argument("--victim", nargs="?", default='vgg19', help="victim model")
+    parser.add_argument('--ghost', nargs='+', default=['resnet','resnext','densenet'])
     parser.add_argument("--n_wb", type=int, default=10, help="number of models in the ensemble: 4,10,20")
     parser.add_argument("--bound", default='linf', choices=['linf','l2'], help="bound in linf or l2 norm ball")
     parser.add_argument("--eps", type=int, default=16, help="perturbation bound: 10 for linf, 3128 for l2")
@@ -86,7 +87,12 @@ def main():
                 'mobilenet_v3_small', 'wide_resnet50_2', 'efficientnet_b4', 'regnet_x_400mf', 'vit_b_16']
     wb = []
     for model_name in surrogate_names[:n_wb]:
-        if 'densenet' in model_name or 'resnet' in model_name:
+        use_ghost = False
+        for ghost_name in args.ghost:
+            if ghost_name in model_name.lower():
+                use_ghost = True
+                break
+        if use_ghost:
             print('Using Ghost networks for ', model_name)
             test_ghost = load_model_ghost(model_name, device)
             test = load_model(model_name, device)
