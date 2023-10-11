@@ -31,7 +31,7 @@ def softmax(vector):
 def main():
     parser = argparse.ArgumentParser(description="BASES attack")
     parser.add_argument("--victim", nargs="?", default='vgg19', help="victim model")
-    parser.add_argument('--ghost', nargs='+', default=['resnet','resnext','densenet'])
+    parser.add_argument('--ghost', nargs='+', default=['resnet','resnext'])
     parser.add_argument("--n_wb", type=int, default=10, help="number of models in the ensemble: 4,10,20")
     parser.add_argument("--bound", default='linf', choices=['linf','l2'], help="bound in linf or l2 norm ball")
     parser.add_argument("--eps", type=int, default=16, help="perturbation bound: 10 for linf, 3128 for l2")

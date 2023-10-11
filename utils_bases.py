@@ -100,7 +100,7 @@ def load_model_ghost(model_name, device):
     Returns:
         model (torchvision.models): the loaded model
     """
-    model = getattr(ghost_models, model_name)(pretrained=False).to(device).eval()
+    model = getattr(ghost_models, model_name)(pretrained=False, random_range = random_range).to(device).eval()
     return model
     
     
