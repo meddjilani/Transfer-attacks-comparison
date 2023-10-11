@@ -95,7 +95,7 @@ def main():
                 break
         if use_ghost:
             print('Using Ghost networks for ', model_name)
-            test_ghost = load_model_ghost(model_name, device)
+            test_ghost = load_model_ghost(model_name, device, args.random_range)
             test = load_model(model_name, device)
 
             torch.save(test.state_dict(), model_name + '_state_dict.pth')
