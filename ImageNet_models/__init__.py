@@ -3,7 +3,6 @@ from .resnet_ghost import *
 from .vgg import *
 from .squeezenet import *
 from .inception import *
-from .densenet_ghost import *
 from .googlenet import *
 from .mobilenet import *
 from .mnasnet import *
