@@ -29,6 +29,8 @@ from torchvision import datasets
 import ImageNet_models as ghost_models
 from utils.datasets import ImageNet1000Dataset
 
+from utils import set_random_seed
+
 
 def load_model(model_name, device):
     """Load the model according to the idx in list model_names
@@ -93,7 +95,10 @@ def main():
     parser.add_argument('--gamma', default=0.5, type=float)
     parser.add_argument("--imagenet_folder", type=str, default='/home/public/datasets/imagenet/ILSVRC2012/val',
                         help="Path to ImageNet test")
+    parser.add_argument('--seed', default=42, type=int)
+
     args = parser.parse_args()
+    set_random_seed(args.seed)
 
     experiment = Experiment(
         api_key=COMET_APIKEY,

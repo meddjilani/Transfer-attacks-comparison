@@ -41,6 +41,7 @@ def main():
     parser.add_argument("--root", nargs="?", default='result', help="the folder name of result")
     parser.add_argument("--dataset_root", nargs="?", default='imagenet1000/images', help="the folder name of imagenet")
     parser.add_argument("--dataset", type=str, default=100, help="imagenet")
+    parser.add_argument("--attack", type=str, default='SES_ver2', help="The attack, BASES or SES")
     
     parser.add_argument("--fuse", nargs="?", default='loss', help="the fuse method. loss or logit")
     parser.add_argument("--loss_name", nargs="?", default='cw', help="the name of the loss")
@@ -61,7 +62,7 @@ def main():
         workspace=COMET_WORKSPACE,
     )
     experiment.set_name("SES_ver2" + "_" + args.victim)
-    parameters = {'attack': 'SES_ver2', **vars(args), "targeted": False if args.untargeted else True,
+    parameters = {**vars(args), "targeted": False if args.untargeted else True,
                   "dataset": args.dataset}
     experiment.log_parameters(parameters)
 
