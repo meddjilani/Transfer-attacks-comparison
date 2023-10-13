@@ -5,3 +5,4 @@ state_dicts
 app_config.py
 models
 data
+.idea/*
