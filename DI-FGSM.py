@@ -17,6 +17,7 @@ from cifar10_models.googlenet import googlenet
 from cifar10_models.densenet import densenet161, densenet121, densenet169
 from cifar10_models.mobilenetv2 import mobilenet_v2
 from Normalize import Normalize
+from utils import set_random_seed
 
 
 if __name__ == '__main__':
@@ -33,7 +34,10 @@ if __name__ == '__main__':
     parser.add_argument('--diversity_prob', type=float,default= 0.5)
     parser.add_argument('--batch_size', type=int, default=512)
     parser.add_argument("--dataset", choices=["mnist", "cifar10", "imagenet"], default="cifar10")
+    parser.add_argument('--seed', default=42, type=int)
+
     args = parser.parse_args()
+    set_random_seed(args.seed)
 
     config = {}
     if os.path.exists('config_ids_source_targets.json'):
@@ -54,7 +58,7 @@ if __name__ == '__main__':
 
     mean = [0.4914, 0.4822, 0.4465]
     std = [0.2471, 0.2435, 0.2616]
-
+    robust_model_source = False
     if args.model =='vgg19':
         source_model = vgg19_bn(pretrained=True)
     elif args.model =='vgg16':
@@ -81,7 +85,10 @@ if __name__ == '__main__':
         source_model = mobilenet(pretrained=True)
     elif args.model =='inception':
         source_model = inception_v3(pretrained=True)
+    else:
+        robust_model_source = True
 
+    robust_model_target = False
     if args.target =='vgg19':
         target_model = vgg19_bn(pretrained=True)
     elif args.target =='vgg16':
@@ -110,28 +117,38 @@ if __name__ == '__main__':
         target_model = densenet121(pretrained=True)
     elif args.target =='mobilenet_v2':
         target_model = mobilenet_v2(pretrained=True)
+    else:
+        robust_model_target = True
 
 
-    source_model = nn.Sequential(
-        Normalize(mean, std),
-        source_model
-    )
-    source_model.eval() 
+    if robust_model_source:
+        source_model = load_model(args.model, dataset='cifar10', threat_model='Linf')
+    else:
+        source_model = nn.Sequential(
+            Normalize(mean, std),
+            source_model
+        )
+        source_model.eval()
     source_model.to(device)
 
-    target_model = nn.Sequential(
-        Normalize(mean, std),
-        target_model
-    )
-    target_model.eval() 
+    if robust_model_target:
+        target_model = load_model(args.target, dataset='cifar10', threat_model='Linf')
+    else:
+        target_model = nn.Sequential(
+            Normalize(mean, std),
+            target_model
+        )
+        target_model.eval() 
     target_model.to(device)
+
 
     x_t, y_t = load_cifar10(n_examples=args.n_examples) if args.dataset == "cifar10" else None
     dataset = TensorDataset(torch.FloatTensor(x_t), torch.LongTensor(y_t))
 
     loader = DataLoader(dataset, batch_size=args.batch_size,
                         pin_memory=True)
-
+    suc_rate_steps = 0
+    images_steps = 0
     for batch_ndx, (x_test, y_test) in enumerate(loader):
         x_test, y_test = x_test.to(device), y_test.to(device)
 
@@ -153,5 +170,9 @@ if __name__ == '__main__':
         
         suc_rate = 1 - clean_accuracy(target_model, adv_images_DI[correct_batch_indices,:,:,:], y_test[correct_batch_indices])
         print(args.target, 'Success Rate: %2.2f %%'%(suc_rate*100))
-        metrics = {'clean_acc': acc, 'robust_acc': rob_acc, 'suc_rate': suc_rate, 'target_correct_pred': correct_predictions}
-        experiment.log_metrics(metrics, step=batch_ndx)
+        if correct_batch_indices.size(0) != 0:
+            suc_rate_steps = suc_rate_steps*images_steps + suc_rate*correct_batch_indices.size(0)
+            images_steps += correct_batch_indices.size(0)
+            suc_rate_steps = suc_rate_steps/images_steps
+        metrics = {'suc_rate_steps':suc_rate_steps, 'clean_acc': acc, 'robust_acc': rob_acc, 'suc_rate': suc_rate, 'target_correct_pred': correct_predictions}
+        experiment.log_metrics(metrics, step=batch_ndx+1)

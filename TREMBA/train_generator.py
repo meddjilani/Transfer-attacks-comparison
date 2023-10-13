@@ -11,7 +11,7 @@ import torchvision
 import torchvision.transforms as transforms
 import numpy as np
 from FCN import *
-from utils import *
+from utils_tremba import *
 import torchvision.models as models
 from robustbench.data import load_cifar10
 from robustbench.utils import load_model
