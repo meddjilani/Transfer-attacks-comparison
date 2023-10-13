@@ -41,6 +41,8 @@ python SGM-DI-FGSM.py --target resnet50 --model resnet18 --n_examples 4 --batch_
 
 
 #TREMBA
+#save_name = "Cifar10_{}{}_untarget.pytorch".format("_".join(args.surrogate_names), state['save_suffix'])
+#Cifar10_resnet34_resnet50train_untarget
 cd TREMBA
 #before running, in config/ directory modify the train json file 
 python train_generator.py --n_im_train 200 --n_im_test 50 --config config/train.json --surrogate_names resnet34 resnet50

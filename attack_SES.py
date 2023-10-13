@@ -35,12 +35,14 @@ import random
 from PIL import Image
 
 from Skip_gradient_method.utils_sgm import register_hook_for_resnet, register_hook_for_densenet
+from utils import set_random_seed
 
 
 def softmax(vector):
     exp_vector = np.exp(vector)
     normalized_vector = exp_vector / np.sum(exp_vector)
     return normalized_vector
+
 
 def main():
     parser = argparse.ArgumentParser(description="SES attack")
@@ -56,16 +58,20 @@ def main():
     
     parser.add_argument("--fuse", nargs="?", default='loss', help="the fuse method. loss or logit")
     parser.add_argument("--loss_name", nargs="?", default='cw', help="the name of the loss")
-    parser.add_argument("--algo", default='mim', help="the algo used inside the perturbation machine")
+    parser.add_argument("--algo", default='pgd', help="the algo used inside the perturbation machine")
     parser.add_argument("--x", type=int, default=3, help="times alpha by x")
-    parser.add_argument("--lr", type=float, default=0.5, help="learning rate of w")
+    parser.add_argument("--lr", type=float, default=0.01, help="learning rate of w")
+    parser.add_argument("--lr_decay", type=float, default=0.75, help="the amount of reducing the lr")
     parser.add_argument("--resize_rate", type=float, default=0.9, help="resize factor used in input diversity")
     parser.add_argument("--diversity_prob", type=float, default=0.5, help="the probability of applying input diversity")
     parser.add_argument("--iterw", type=int, default=50, help="iterations of updating w")
     parser.add_argument("--n_im", type=int, default=10000, help="number of images")
     parser.add_argument("--untargeted", action='store_true', help="run untargeted attack")
     parser.add_argument('--gamma', default=0.5, type=float)
+    parser.add_argument('--seed', default=42, type=int)
+
     args = parser.parse_args()
+    set_random_seed(args.seed)
 
     config = {}
     if os.path.exists('config_ids_source_targets.json'):
@@ -79,7 +85,7 @@ def main():
     )
     experiment.set_name("SES_"+"_".join(args.surrogate_names)+"_"+args.target) 
 
-    parameters = {'attack': 'SES', **vars(args), **config}
+    parameters = {'attack': 'QueryEnsemble', **vars(args), **config}
     experiment.log_parameters(parameters)
 
     
@@ -217,10 +223,10 @@ def main():
 
 
     #create folders
-    formatted_pairs = [f"{key}-{value}" for key, value in vars(args).items()]
-    exp = '_'.join(formatted_pairs)
-    adv_root = Path(f"adversarial images/") / exp
-    adv_root.mkdir(parents=True, exist_ok=True)
+    # formatted_pairs = [f"{key}-{value}" if key!='surrogate_names' else f"{key}-{''.join(value)}" for key, value in vars(args).items()]
+    # exp = '_'.join(formatted_pairs)
+    # adv_root = Path(f"adversarial images/") / exp
+    # adv_root.mkdir(parents=True, exist_ok=True)
     
     success_idx_list = set()
     success_idx_list_pretend = set() # untargeted success
@@ -236,8 +242,6 @@ def main():
         image, label = image.to(device), label.to(device)
         with torch.no_grad():
             pred_vic = torch.argmax(victim_model(image)).item()
-        if label.item() == pred_vic:
-            correct_pred +=1
         lr_w = float(args.lr) # re-initialize
         image = torch.squeeze(image)
         im_np = np.array(image.cpu())
@@ -250,6 +254,8 @@ def main():
             tgt_label = gt_label
         else:
             print("tgt_label:",tgt_label)
+        if ((args.untargeted) and (label.item() == pred_vic)) or ((not args.untargeted) and ( tgt_label != pred_vic)):
+            correct_pred +=1
 
         # start from equal weights
         w_np = np.array([1 for _ in range(len(wb))]) / len(wb)
@@ -267,7 +273,7 @@ def main():
             print('success', gt_label,' ------> ', label_idx,'\n')
             success_idx_list.add(im_idx)
             query_list.append(n_query)
-            if label.item() == pred_vic:
+            if ((args.untargeted) and (label.item() == pred_vic)) or ((not args.untargeted) and ( tgt_label != pred_vic)):
                 suc_adv +=1
                 
         else: 
@@ -296,7 +302,7 @@ def main():
                     w_np = w_np_temp_plus
                     adv_np = adv_np_plus
                     w_list.append(w_np.tolist())
-                    if label.item() == pred_vic:
+                    if ((args.untargeted) and (label.item() == pred_vic)) or ((not args.untargeted) and ( tgt_label != pred_vic)):
                         suc_adv +=1
                     loss_target.append(loss_plus)
                     break
@@ -322,7 +328,7 @@ def main():
                     w_np = w_np_temp_minus
                     adv_np = adv_np_minus
                     w_list.append(w_np.tolist())
-                    if label.item() == pred_vic:
+                    if ((args.untargeted) and (label.item() == pred_vic)) or ((not args.untargeted) and ( tgt_label != pred_vic)):
                         suc_adv +=1
                     loss_target.append(loss_minus)
                     break
@@ -345,7 +351,7 @@ def main():
                 
                 if n_query > 5 and last_idx == n_wb-1:
                     #lr_w /= 2 # decrease the lr
-                    lr_w = lr_w * 0.75
+                    lr_w = lr_w * args.lr_decay
                     print(f"lr_w: {lr_w}")
                 
                 if n_query >= args.iterw:
@@ -355,18 +361,15 @@ def main():
         rob_acc = 1-(len(success_idx_list)/(im_idx+1))
         suc_rate = 0 if correct_pred==0 else suc_adv / correct_pred
         w_dict = dict(zip(keys, w_np.tolist()))
-        metrics = {'robust_acc': rob_acc, 'suc_rate_step' : suc_rate, 'target_correct_pred': correct_pred, 'n_query_step': n_query, 'loss':loss_target[-1], 'minloss':min(loss_target), 'maxloss':max(loss_target), 'meanloss':sum(loss_target) / len(loss_target)}
+        metrics = {'robust_acc_steps': rob_acc, 'suc_rate_steps' : suc_rate, 'target_correct_pred_steps': correct_pred, 'n_query_steps':np.mean(query_list), 'n_query': n_query, 'loss':loss_target[-1], 'minloss':min(loss_target), 'maxloss':max(loss_target), 'meanloss':sum(loss_target) / len(loss_target)}
         metrics.update(w_dict)
         experiment.log_metrics(metrics, step=im_idx+1)
 
         #save adv im
-        adv_path = adv_root / f"{str(im_idx)}.png"
-        image_array = (adv_np * 255).astype(np.uint8)
-        image_pil = Image.fromarray(image_array.transpose(1, 2, 0))
-        image_pil.save(adv_path)
-
-    experiment.log_metric('suc_rate',len(success_idx_list)/(im_idx+1) )
-    [experiment.log_metric('n_query', q) for q in query_list]
+        # adv_path = adv_root / f"{str(im_idx)}.png"
+        # image_array = (adv_np * 255).astype(np.uint8)
+        # image_pil = Image.fromarray(image_array.transpose(1, 2, 0))
+        # image_pil.save(adv_path)
 
     if (args.untargeted):
         print(f"untargeted. total_success: {len(success_idx_list)}; success_rate: {len(success_idx_list)/(im_idx+1)}, avg queries: {np.mean(query_list)}")

@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/')
+sys.path.append('../')
 
 from comet_ml import Experiment
 import argparse
@@ -10,8 +10,8 @@ import torchvision.transforms as transforms
 import os
 import json
 from robustbench.utils import load_model, clean_accuracy
-from TREMBA.utils import *
-from TREMBA.FCN import *
+from utils_tremba import *
+from FCN import *
 from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
 from Normalize import Normalize
 from cifar10_models.vgg import vgg16_bn,vgg11_bn,vgg19_bn, vgg13_bn
@@ -20,6 +20,8 @@ from cifar10_models.inception import inception_v3
 from cifar10_models.googlenet import googlenet
 from cifar10_models.densenet import densenet161, densenet121, densenet169
 from cifar10_models.mobilenetv2 import mobilenet_v2
+
+from utils import set_random_seed
 
 
 def EmbedBA(function, encoder, decoder, image, label, config, latent=None, query_limit = 100):
@@ -80,8 +82,10 @@ parser.add_argument('--save_prefix', default=None, help='override save_prefix in
 parser.add_argument('--target', default='Carmon2019Unlabeled')
 parser.add_argument('--query_limit', type=int, default=100)
 parser.add_argument('--generator_name', default='Cifar10_densenet161_densenet169_vgg16train_untarget')
+parser.add_argument('--seed', default=42, type=int)
 
 args = parser.parse_args()
+set_random_seed(args.seed)
 query_limit = args.query_limit
 
 with open(args.config) as config_file:
@@ -106,7 +110,7 @@ experiment.log_parameters(parameters)
 
 device = torch.device(args.device if torch.cuda.is_available() else "cpu")
 
-weight = torch.load(os.path.join("TREMBA/G_weight", args.generator_name + ".pytorch"), map_location=device)
+weight = torch.load(os.path.join("G_weight", args.generator_name+".pytorch"), map_location=device)
 
 encoder_weight = {}
 decoder_weight = {}
@@ -204,7 +208,8 @@ for i, (images, labels) in enumerate(dataloader):
         count_total += int(correct)
         print("image: {} eval_count: {} success: {} average_count: {} success_rate: {}".format(i, F.current_counts, success, F.get_average(), float(count_success) / float(count_total)))
         F.new_counter()
-
+        metrics = {'suc_rate_steps' : float(count_success) / float(count_total), 'target_correct_pred_steps': count_total, 'n_query_steps': F.get_average(), 'n_query': F.current_counts}
+        experiment.log_metrics(metrics, step=i)
 # if state['target']:
 #     np.save(os.path.join(state['save_path'], '{}_class_{}.npy'.format(state['save_prefix'], state['target_class'])), np.array(F.counts))
 # else:
@@ -213,5 +218,3 @@ for i, (images, labels) in enumerate(dataloader):
 success_rate = float(count_success) / float(count_total)
 print("success rate {}".format(success_rate))
 print("average eval count {}".format(F.get_average()))
-metrics = {'Queries': F.get_average(), 'success_rate': success_rate}
-experiment.log_metrics(metrics)
