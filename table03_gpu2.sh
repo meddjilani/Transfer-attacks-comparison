@@ -1,5 +1,5 @@
-export CUDA_VISIBLE_DEVICES=1
-N_IMG=1000
+export CUDA_VISIBLE_DEVICES=2
+N_IMG=10000
 for seed in 42 1 10 100 1000; do
   for target in "Standard" "Gowal2020Uncovering_70_16" "Hendrycks2019Using" "Cui2020Learnable_34_10" "Wong2020Fast"; do
     # BASES

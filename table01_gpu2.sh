@@ -1,8 +1,8 @@
 #Remaining work for table01: add target models
 
-export CUDA_VISIBLE_DEVICES=1
+export CUDA_VISIBLE_DEVICES=2
 
-for seed in 42 1 10; do
+for seed in 100 1000; do
   # SES
   python attack_SES.py --untargeted --n_im 10000 --loss_name cw --iters 10 --fuse loss --x 3 --iterw 10 --target vgg19 --surrogate_names resnet18 resnet50 #resnet34 densenet161 densenet169 densenet121
 

@@ -25,7 +25,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', type=str, default='Gowal2021Improving_28_10_ddpm_100m')
     parser.add_argument('--target', type=str, default= 'Carmon2019Unlabeled')
-    parser.add_argument('--n_examples', type=int, default=10)
+    parser.add_argument('--n_im', type=int, default=10)
     parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--eps', default=8/255, type=float, help='perturbation')
     parser.add_argument('--nb_iter', dest='steps', default=10, type=int,help='perturb number of steps')
@@ -141,7 +141,7 @@ if __name__ == '__main__':
         target_model.eval() 
     target_model.to(device)
 
-    x_test, y_test = load_cifar10(n_examples=args.n_examples)
+    x_test, y_test = load_cifar10(args.n_im)
     x_test, y_test = x_test.to(device), y_test.to(device)
 
     dataset_test = TensorDataset(x_test, y_test)

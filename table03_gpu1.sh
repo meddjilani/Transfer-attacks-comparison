@@ -1,5 +1,5 @@
 export CUDA_VISIBLE_DEVICES=1
-N_IMG=1000
+N_IMG=10000
 for seed in 42 1 10 100 1000; do
   for target in "Gowal2021Improving_70_16_ddpm_100m" "Rebuffi2021Fixing_70_16_cutmix_ddpm" "Carmon2019Unlabeled"; do
     # BASES

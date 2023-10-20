@@ -1,5 +1,5 @@
-export CUDA_VISIBLE_DEVICES=1
-N_IMG=1000
+export CUDA_VISIBLE_DEVICES=0
+N_IMG=10000
 for seed in 42 1 10 100 1000; do
   for target in "Peng2023Robust" "Wang2023Better_WRN-70-16" "Rebuffi2021Fixing_70_16_cutmix_extra"; do
     # BASES

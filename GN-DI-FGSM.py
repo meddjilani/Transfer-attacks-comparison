@@ -30,7 +30,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', type=str, default='Gowal2021Improving_28_10_ddpm_100m')
     parser.add_argument('--target', type=str, default= 'Carmon2019Unlabeled')
-    parser.add_argument('--n_examples', type=int, default=10)
+    parser.add_argument('--n_im', type=int, default=10)
     parser.add_argument('--eps', type = float, default=8/255)
     parser.add_argument('--alpha', type=float,default=2/255)
     parser.add_argument('--decay', type=float,default= 1.0)
@@ -149,7 +149,7 @@ if __name__ == '__main__':
 
 
 
-    x_t, y_t = load_cifar10(n_examples=args.n_examples) if args.dataset=="cifar10" else None
+    x_t, y_t = load_cifar10(args.n_im) if args.dataset=="cifar10" else None
     dataset = TensorDataset(torch.FloatTensor(x_t), torch.LongTensor(y_t))
 
     loader = DataLoader(dataset, batch_size=args.batch_size,
