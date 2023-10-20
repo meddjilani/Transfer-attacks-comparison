@@ -104,7 +104,7 @@ experiment = Experiment(
     project_name=COMET_PROJECT,
     workspace=COMET_WORKSPACE,
 )
-parameters = {'attack': 'TREMBA attack', **vars(args), **state}
+parameters = {'attack': 'TREMBA', **vars(args), **state}
 experiment.log_parameters(parameters)
 
 

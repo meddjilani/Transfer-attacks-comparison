@@ -1,7 +1,7 @@
 export CUDA_VISIBLE_DEVICES=1
 N_IMG=1000
 for seed in 42 1 10 100 1000; do
-  for target in "Peng2023Robust" "Wang2023Better_WRN-70-16" "Rebuffi2021Fixing_70_16_cutmix_extra"; do
+  for target in "Standard" "Gowal2020Uncovering_70_16" "Hendrycks2019Using" "Cui2020Learnable_34_10" "Wong2020Fast"; do
     # BASES
     python attack_BASES.py --untargeted --n_im $N_IMG --loss_name cw --iters 10 --fuse loss --x 3 --iterw 30 --target "$target" --surrogate_names resnet18 resnet50 resnet34 densenet161 densenet169 densenet121 --seed $seed
     # EBAD
