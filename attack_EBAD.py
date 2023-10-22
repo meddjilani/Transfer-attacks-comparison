@@ -71,7 +71,7 @@ def main():
     )
     experiment.set_name("EBAD_"+"_".join(args.surrogate_names)+"_"+args.target) 
 
-    parameters = {'attack': 'QueryEnsemble', **vars(args), **config}
+    parameters = {'attack': 'EBAD', **vars(args), **config}
     experiment.log_parameters(parameters)
 
 
