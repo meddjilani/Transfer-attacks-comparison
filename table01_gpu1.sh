@@ -12,8 +12,7 @@ python attack_SES.py --untargeted --n_im 10000 --loss_name cw --iters 10 --fuse 
 #before running, in config/ directory modify the train json file
 python train_generator_TREMBA.py --config TREMBA/config/train.json --surrogate_names resnet34 resnet50 --n_im_train 50000
 #before running, in config/ directory modify the attack  json file
-python attack_TREMBA.py --config TREMBA/config/attack.json --device cuda --save_prefix xp1 --target densenet161 --generator_name Cifar10_densenet161_densenet169_vgg16train_untarget --n_im 10000
-
+python attack_TREMBA.py --config TREMBA/config/attack.json --device cuda --save_prefix xp1 --target densenet161 --generator_name Cifar10_resnet34_resnet50train_untarget --n_im 10000
 
 # BASES
 python attack_BASES.py --untargeted --n_im 10000 --loss_name cw --iters 10 --fuse loss --x 3 --iterw 10 --target vgg19 --surrogate_names resnet18 resnet50 #resnet34 densenet161 densenet169 densenet121
