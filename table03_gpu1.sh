@@ -1,6 +1,6 @@
 export CUDA_VISIBLE_DEVICES=2
 for seed in 42 1 10 100 1000; do
-  for target in "Peng2023Robust" "Wang2023Better WRN-70-16" "Rebuffi2021Fixing 70 16 cutmix extra" "Gowal2021Improving 70 16 ddpm 100m" "Rebuffi2021Fixing 70 16 cutmix ddpm" "Carmon2019Unlabeled" "Gowal2020Uncovering 70 16" "Hendrycks2019Using" "Cui2020Learnable 34 10" "Wong2020Fas"; do
+  for target in "Peng2023Robust" "Wang2023Better_WRN-70-16" "Rebuffi2021Fixing_70_16_cutmix_extra" "Gowal2021Improving_70_16_ddpm_100m" "Rebuffi2021Fixing_70_16_cutmix_ddpm" "Carmon2019Unlabeled" "Gowal2020Uncovering_70_16" "Hendrycks2019Using" "Cui2020Learnable_34_10" "Wong2020Fast"; do
     #SES
     python attack_SES.py --untargeted --n_im 10000 --loss_name cw --iters 10 --fuse loss --x 3 --iterw 30 --target $target --surrogate_names resnet18 resnet50 resnet34 densenet161 densenet169 densenet121 --seed $seed  
     # BASES

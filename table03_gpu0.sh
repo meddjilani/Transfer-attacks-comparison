@@ -1,7 +1,7 @@
 export CUDA_VISIBLE_DEVICES=0
 
 for seed in 42 1 10 100 1000; do
-  for target in "Peng2023Robust" "Wang2023Better WRN-70-16" "Rebuffi2021Fixing 70 16 cutmix extra" "Gowal2021Improving 70 16 ddpm 100m" "Rebuffi2021Fixing 70 16 cutmix ddpm" "Carmon2019Unlabeled" "Gowal2020Uncovering 70 16" "Hendrycks2019Using" "Cui2020Learnable 34 10" "Wong2020Fas"; do
+  for target in "Peng2023Robust" "Wang2023Better_WRN-70-16" "Rebuffi2021Fixing_70_16_cutmix_extra" "Gowal2021Improving_70_16_ddpm_100m" "Rebuffi2021Fixing_70_16_cutmix_ddpm" "Carmon2019Unlabeled" "Gowal2020Uncovering_70_16" "Hendrycks2019Using" "Cui2020Learnable_34_10" "Wong2020Fast"; do
     #MI
     python MI-FGSM.py --target $target --model resnet18 --n_examples 10000 --batch_size 32 --eps 0.031 --alpha 0.0078 --steps 10 --decay 1.0 --seed $seed
     #Ghost
