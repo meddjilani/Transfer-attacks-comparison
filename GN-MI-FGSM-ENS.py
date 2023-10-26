@@ -10,7 +10,7 @@ import argparse
 from app_config import COMET_APIKEY, COMET_WORKSPACE, COMET_PROJECT
 from torch.utils.data import TensorDataset, DataLoader
 
-
+from utils.modelzoo_ghost.robustbench.robustbench.utils import load_model_ghost
 from cifar10_models.vgg import vgg16_bn,vgg11_bn,vgg19_bn, vgg13_bn
 from cifar10_models.resnet import resnet18,resnet34,resnet50
 from cifar10_models.inception import inception_v3
@@ -95,7 +95,7 @@ if __name__ == '__main__':
         else:
             robust_model_source = True
         if robust_model_source:
-            source_model = load_model(model_name, dataset='cifar10', threat_model='Linf')
+            source_model = load_model_ghost(model_name, dataset='cifar10', threat_model='Linf')
         else:
             source_model = nn.Sequential(
                 Normalize(mean, std),
