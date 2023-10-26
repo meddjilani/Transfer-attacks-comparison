@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -22,7 +23,12 @@ class BasicBlock(nn.Module):
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
-        out += self.shortcut(x)
+
+        random_range = 0.22
+        perturb_var = torch.rand((1, self.shortcut(x).size(1), 1, 1), requires_grad=False, device=x.device) * random_range * 2 + (
+            1 - random_range)
+
+        out += self.shortcut(x)*perturb_var
         out = F.relu(out)
         return out
 
@@ -50,7 +56,12 @@ class Bottleneck(nn.Module):
         out = F.relu(self.bn1(self.conv1(x)))
         out = F.relu(self.bn2(self.conv2(out)))
         out = self.bn3(self.conv3(out))
-        out += self.shortcut(x)
+
+        random_range = 0.22
+        perturb_var = torch.rand((1, self.shortcut(x).size(1), 1, 1), requires_grad=False, device=x.device) * random_range * 2 + (
+            1 - random_range)
+        
+        out += self.shortcut(x)*perturb_var
         out = F.relu(out)
         return out
 
@@ -138,9 +149,14 @@ class PreActBlock(nn.Module):
     def forward(self, x):
         out = F.relu(self.bn1(x))
         shortcut = self.shortcut(out if self.out_shortcut else x) if hasattr(self, 'shortcut') else x
+
+        random_range = 0.22
+        perturb_var = torch.rand((1, shortcut.size(1), 1, 1), requires_grad=False, device=x.device) * random_range * 2 + (
+            1 - random_range)
+        
         out = self.conv1(out)
         out = self.conv2(F.relu(self.bn2(out)))
-        out += shortcut
+        out += shortcut*perturb_var
         return out
 
 
