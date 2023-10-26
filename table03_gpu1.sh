@@ -17,6 +17,6 @@ for seed in 42 1 10 100 1000; do
     #before running, in config/ directory modify the train json file 
     python train_generator_TREMBA.py --config TREMBA/config/train.json --surrogate_names resnet34 resnet50 densenet161 densenet169 densenet121 --n_im_train 60000
     #before running, in config/ directory modify the attack  json file 
-    python attack.py --n_im 10000 --query_limit 100 --config config/attack.json --device cuda --save_prefix your_save_prefix --model_name Standard --generator_name Cifar10_resnet34_resnet50_densenet161_densenet169_densenet121train_untarget --seed $seed
+    python attack_TREMBA.py --n_im 10000 --query_limit 100 --config TREMBA/config/attack.json --device cuda --target Standard --generator_name Cifar10_resnet34_resnet50_densenet161_densenet169_densenet121train_untarget --seed $seed
   done
 done
