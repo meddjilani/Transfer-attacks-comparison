@@ -1,5 +1,5 @@
 import sys
-sys.path.append('../')
+# sys.path.append('../')
 
 import argparse
 import os
@@ -10,8 +10,8 @@ import torch.nn.functional as F
 import torchvision
 import torchvision.transforms as transforms
 import numpy as np
-from FCN import *
-from utils_tremba import *
+from TREMBA.FCN import *
+from TREMBA.utils_tremba import *
 import torchvision.models as models
 from robustbench.data import load_cifar10
 from robustbench.utils import load_model
@@ -181,5 +181,5 @@ if __name__ == '__main__':
             test()
         if not os.path.exists("G_weight"):
             os.mkdir("G_weight")
-        torch.save(model.state_dict(), os.path.join("G_weight", save_name))
+        torch.save(model.state_dict(), os.path.join("TREMBA/G_weight", save_name))
         print("epoch {}, Current success: {}".format(epoch, state['test_success']))

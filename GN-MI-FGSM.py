@@ -127,7 +127,7 @@ if __name__ == '__main__':
 
 
     if robust_model_source:
-        source_model = load_model(args.model, dataset='cifar10', threat_model='Linf')
+        source_model = load_model_ghost(args.model, dataset='cifar10', threat_model='Linf')
     else:
         source_model = nn.Sequential(
             Normalize(mean, std),
