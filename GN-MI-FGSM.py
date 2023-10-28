@@ -23,6 +23,7 @@ from cifar10_models.densenet_ghost import densenet161 as densenet161_gn, densene
 
 from Normalize import Normalize
 from utils import set_random_seed
+from utils.modelzoo_ghost.robustbench.robustbench.utils import load_model_ghost
 
 
 if __name__ == '__main__':
