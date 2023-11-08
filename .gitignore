@@ -6,3 +6,4 @@ app_config.py
 models
 data
 .idea/*
+*.pyc
